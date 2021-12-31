@@ -1,0 +1,54 @@
+.containerHome{
+    display: flex;
+    flex-direction: row;
+    margin: none;
+    width: 100%;
+    max-height: 800px;
+}
+p.textLeft{
+    animation-name: bodyLeft;
+    animation-duration: 2s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    font-size: 30px;
+    text-align:center;
+    margin-top: 60%;
+}
+
+img.mySlides {
+    height: 500px;
+    max-width: 100%;
+    transition: opacity 1s;
+    position: absolute;
+}
+
+img.homepage{
+    height: 100%;
+    width: 100%;
+}
+    
+#bodyLeft{
+    margin-left: 0%;
+    width: 25%;
+    height: 100%;
+    margin-right: 0%;
+    background-color:rgb(199, 199, 199);
+    text-align: center;
+}
+
+#slideshow{
+    height: 100%;
+    width: 100%;
+    padding: none;
+}
+
+@keyframes bodyLeft{
+    from{
+        transform: translateX(-1000px);
+    }
+    to{
+        transform: translateX(0%);
+    }
+}
+
+

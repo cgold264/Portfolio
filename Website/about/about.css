@@ -1,0 +1,98 @@
+#locationTitle{
+    max-width: 100%;
+    background-color: rgb(170, 170, 170);
+    text-align: center;
+    font-size: 24px;
+}
+
+#locationDisplay{
+    max-width: 100%;
+    background-color: rgb(199, 199, 199);
+    text-align: center;
+}
+
+#hobbies{
+    margin:3%;
+    background-color: rgb(199, 199, 199);
+    padding:none;
+    text-align: center;
+}
+
+#education{
+    margin-right:10%;
+    margin-left: 0%;
+    margin-top: 3%;
+    margin-bottom: 3%;
+    background-color:rgb(199, 199, 199);
+    text-align: center;
+}
+
+#gonzagaimg{
+    max-width: 200px;
+    max-height: 200px;
+    margin: none;
+}
+
+#gonzagaimg:hover{
+    opacity: 25%;
+}
+
+.locationImage{
+    margin-top: 1%;
+    margin-bottom: 1%;
+    margin-left: none;
+    margin-right: none;
+    width: 600px;
+    height: 400px;
+    max-width: 98%;
+}
+
+.locationImage:hover{
+    opacity: 75%;
+}
+
+a.location{
+    margin: 2%;
+}
+
+img.mySlides {
+    height: 400px;
+    width: 300px;
+    float: left;
+    transition: opacity 0.5s;
+    position: absolute;
+}
+
+p.text{
+    margin-left: 2%;
+    margin-top: 0;
+    margin-bottom: 2%;
+    padding: none;
+    font-size: 40px;
+    
+}
+
+#slideshow{ 
+    margin: 3%;
+    height: 400px;
+    width: 300px;
+    padding: none;
+    float: left;
+}
+
+#bodyRight{
+    margin-left:15%;
+    margin-right: 0%;
+    margin-top: 3%;
+    background-color:rgb(199, 199, 199);
+}
+
+p#title{
+    margin-top: 2%;
+    margin-bottom: 2%;
+    text-decoration: none;
+    font-size: 40px;
+    
+}
+
+
