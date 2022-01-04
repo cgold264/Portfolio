@@ -4,6 +4,7 @@ body{
     padding: 0%;
     margin: 0%;
     overflow: auto;
+    max-width: 100%;
 }
 
 .wrapper{
@@ -32,7 +33,7 @@ a.barItem{
     padding-right: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
-    margin-left: 0%;
+    margin-left: 0;
     margin-right: 5px;
     text-decoration: none;
     font-size: 20px;
@@ -86,7 +87,7 @@ img.links:hover{
 }
 
 #foot {
-    padding:5%;
+    padding:40px;
     max-width: 100%;
     padding-top: 1px;
     padding-bottom: 1px;
