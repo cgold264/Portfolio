@@ -1,0 +1,41 @@
+.projectImg{
+    margin: 1%;
+    width: 600px;
+    height: 400px;
+    max-width: 98%;
+}
+
+.projectImgDiv{
+    padding: none;
+    max-width: 100%;
+    background-color: rgb(199, 199, 199);
+}
+
+.projectTitle{
+    max-width: 100%;
+    background-color: rgb(170, 170, 170);
+    text-align: center;
+    font-size: 30px;
+}
+
+.projectBackground{
+    padding: 3%;
+    max-width: 100%;
+    background-color: rgb(199, 199, 199);
+    text-align: center;
+}
+
+.projectTxt{
+    margin: 1%;
+    padding: 2%;
+    background-color:rgb(161, 161, 161);
+    max-width: 100%;
+}
+
+#projectDisplayCode{
+    padding: 2%;
+    text-align: left;
+    background-color:rgb(161, 161, 161);
+    max-width: 100%;
+    font-size: 10px;
+}

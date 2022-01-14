@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects</title>
+</head>
+<style>@import "CSS/website.css"; @import "CSS/projects.css";</style>
+<div class="wrapper">
+<header>
+    <div id="headingContainer">
+        <img id="headingImage" src="Images/photo_background.JPG">
+    </div>
+    <div class="container" id="navBar">
+        <a href="index.html" class="barItem"><b>Home</b></a>
+        <a href="about.html" class="barItem"><b>About</b></a>
+        <a href="projects.html" class="barItem"><b>Contact</b></a>
+        <a href="contact.html" class="barItem"><b>Contact</b></a>  
+    </div>
+</header>
+<body>
+    <div class="projectTitle">
+        Project Course Work
+    </div>
+    <div id="projects" class="projectBackground">
+        <div class="projectTitle">
+
+        </div>
+        <div class="projectImageDiv">
+            <img class="projectImg" src="Images/project_images/spendingPhone.jpg">
+            <img class="projectImg" src="Images/project_images/sheets.jpg">
+        </div>
+        <div class="projectTxt">
+            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Rerum odit velit expedita nulla sed vel, magnam fugit? Deleniti ullam tenetur fugit officiis quo quos, nihil atque autem voluptatibus, quaerat eos harum odit perspiciatis totam magni laborum dolorum ea. Exercitationem, sapiente et corrupti id voluptatem tempore? Laborum delectus eveniet omnis fugiat suscipit vel architecto, doloribus reiciendis neque, repudiandae soluta natus. Quas ipsum nobis sunt optio impedit. Illum nihil debitis aspernatur sapiente at adipisci error maiores quam saepe deserunt voluptate, in minus voluptatem rerum dignissimos laboriosam nulla? Ducimus vitae sit consectetur esse, veritatis doloribus, harum natus pariatur accusantium tempore vero aliquam suscipit.
+        </div>
+    </div>
+    <div class="projectTitle">
+        Related Course Work
+    </div>
+    <div id="relatedCourse" class="projectBackground">
+        <div class="projectImageDiv">
+
+        </div>
+        <div id="projectDisplayCode">
+            <figure>
+                <figcaption>Huffman Code</figcaption>
+                <pre>
+                    <code>
+import java.util.*;
+import java.io.*;
+/*Connor Goldschmidt
+TA: Lisi Case
+12/9/2021*/
+
+//The HuffmanCode class compresses a given file based on the compression
+//technique of David A. Huffman of MIT
+public class HuffmanCode{
+private HuffmanNode overallRoot;
+
+/*pre: the index of "frequencies" must represent the ACSII value of the 
+character and the value of each index represents the frequency of the 
+corresponding ASCII value */
+//post: creates a new HuffmanNode object and creates a "key" based off 
+//the "frequencies"
+public HuffmanCode(int[] frequencies){
+    Queue<HuffmanNode> code = new PriorityQueue<HuffmanNode>();
+    for(int i = 0; i < frequencies.length; i++){
+        if(frequencies[i] != 0){
+            code.add(new HuffmanNode(i, frequencies[i]));
+        }
+    }
+    overallRoot = makeTree(code);
+}
+
+//post: returns a HuffmanNode tree that represents the values of the queue "priorty" 
+//queue and organizes the nodes according to the order of the queue
+private HuffmanNode makeTree(Queue<HuffmanNode> priority){
+    while(priority.size() > 1){
+        HuffmanNode left = priority.remove();
+        HuffmanNode right = priority.remove();
+        HuffmanNode temp = new HuffmanNode(0, left.frequency + right.frequency, left, right);
+        priority.add(temp);
+    }
+    return priority.remove();
+}
+
+/*pre: "input" must not be null and must contain data in legal form. Legal form is 
+represented as the ASCII value followed by the binary representation on the 
+following line in pre-order traversal.*/
+//post: initalizes the HuffmanCode object and stores the given "key"
+public HuffmanCode(Scanner input){
+    while(input.hasNextLine()){
+        overallRoot = makeTree(overallRoot, Integer.parseInt(input.nextLine()), 
+                                input.nextLine());
+    }  
+}
+    
+//post: returns a HuffmanNode that is a tree representation of the given 
+//"letter' and "code"
+private HuffmanNode makeTree(HuffmanNode curr, int letter, String code){
+    if(code.length() >= 1){
+        if(curr == null){
+            curr = new HuffmanNode(0);
+        }
+        String substring = code.substring(1);
+        if(code.substring(0, 1).equals("0")){
+            curr.left = makeTree(curr.left, letter, substring);
+        } else {
+            curr.right = makeTree(curr.right, letter, substring);
+        }
+    } else {
+        curr = new HuffmanNode(letter);
+    }
+    return curr;
+}
+
+//post: prints the current, stored, information about the stored key in the
+//legal format or pre-order traversal in the given "output"
+public void save(PrintStream output){
+    save(overallRoot, "", output); 
+}
+    
+//post: iterates over the entire current tree and prints the tree in standard format
+//or pre-order traversal
+private void save(HuffmanNode curr, String binary, PrintStream output){
+    if(curr.left == null && curr.right == null){
+        output.println(curr.data + "\n" + binary);
+    } else {
+        save(curr.left, binary + "0", output);
+        save(curr.right, binary + "1", output);
+    }
+}
+
+//pre: "input" must contain a legal encoding of characters for the current 
+//HuffmanNode object
+//post: reads each individual bit in the "input" and wrties it to the "output"
+public void translate(BitInputStream input, PrintStream output){
+    HuffmanNode curr = overallRoot;
+    while(input.hasNextBit()){
+        while(!(curr.left == null || curr.right == null)){        
+            int tempBit = input.nextBit();
+            if(tempBit == 0){
+            curr = curr.left;
+            } else {
+            curr = curr.right;
+            }
+        }
+        output.write((char)curr.data);
+        curr = overallRoot;
+    }
+}
+
+//The HuffmanNode class creates and stores a binary tree, this class 
+//implements the Comparable interface
+private static class HuffmanNode implements Comparable<HuffmanNode>{
+    public int data;
+    public int frequency;
+    public HuffmanNode left;
+    public HuffmanNode right;
+    
+    //post: creates a new HuffmaNode object with empty branches, a frequency of 0, 
+    //and stores the given "data"
+    public HuffmanNode(int data){
+        this(data, 0, null, null);
+    }
+    
+    //post: creates a new HuffmanNode object with empty branches, 
+    //stores the given "data" and "freq"
+    public HuffmanNode(int data, int freq){
+        this(data, freq, null, null);
+    }
+    
+    //post: creates a new HuffmanNode object with the given "data", "freq"  and branches
+    // that point to "left" and "right"
+    public HuffmanNode(int data, int freq, HuffmanNode left, HuffmanNode right){
+        this.data = data;
+        this.frequency = freq;
+        this.left = left;
+        this.right = right;
+    } 
+    
+    /*post: compares the two HuffmanNodes based off of the stored frequency,
+    will return -1 if the frequency is less than the imput frequency, 0 if 
+    the frequencies are equal, and 1 if the this frequency is greater than 
+    "other"*/
+    public int compareTo(HuffmanNode other){
+        if(this.frequency < other.frequency){
+            return -1;
+        } else if(this.frequency > other.frequency){
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
+}
+                    </code>
+                </pre>
+            </figure>
+
+        </div>
+    </div>
+</body>
+</html>
