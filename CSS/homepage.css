@@ -1,8 +1,9 @@
 .containerHome{
     margin: none;
+    padding: none;
     width: 100%;
-    height: 100%;
-    background-color:rgb(199, 199, 199);
+    height: auto;   
+    background-color: rgb(199, 199, 199);
 }
 p.textLeft{
     animation-name: bodyLeft;
@@ -11,18 +12,31 @@ p.textLeft{
     animation-fill-mode: forwards;
     font-size: 30px;
     text-align: center;
-    width: 500px;
-    max-width: 100%;
-    margin-top: 20%;
-    float:left;
+    width: 250px;
+    max-height: 100%;
+    margin: 0;
+    max-width: 35%;
+    margin-top: 10%;
+    position: absolute;
+    background-color: rgb(199, 199, 199);
 }
 
 img.homepage{
     margin: none;
     height: 700px;
-    width: 1000px;
-    max-height: 100%;   
+    width: 1150px;
+    height: auto;  
     max-width: 100%;
+    float: right;
+}
+
+img.mySlides {
+    height: 700px;
+    width: 1150px;
+    float: right;
+    max-width: 100%;
+    transition: opacity 0.5s;
+    position: absolute;
 }
 
 @keyframes bodyLeft{

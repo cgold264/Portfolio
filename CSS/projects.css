@@ -8,34 +8,64 @@
 .projectImgDiv{
     padding: none;
     max-width: 100%;
-    background-color: rgb(199, 199, 199);
+    text-align: center;
 }
 
 .projectTitle{
     max-width: 100%;
-    background-color: rgb(170, 170, 170);
+    padding: 1%;
+    background-color: rgb(161, 161, 161);
     text-align: center;
     font-size: 30px;
 }
 
 .projectBackground{
-    padding: 3%;
-    max-width: 100%;
-    background-color: rgb(199, 199, 199);
+    padding: 0%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    margin-left:auto;
+    margin-right: auto;
+    max-width: 90%;
+    background-color: rgb(180, 180, 180);
     text-align: center;
 }
 
 .projectTxt{
-    margin: 1%;
+    margin: 2%;
     padding: 2%;
-    background-color:rgb(161, 161, 161);
+    background-color: rgb(161, 161, 161);
     max-width: 100%;
+    font-size: 20px;
+    text-align: center;
 }
 
 #projectDisplayCode{
     padding: 2%;
+    margin: auto;
+    margin-bottom: 2%;
     text-align: left;
-    background-color:rgb(161, 161, 161);
-    max-width: 100%;
+    max-width: 90%;
     font-size: 10px;
+    background-color: rgb(170,170,170);
+}
+
+#linkWrapper{
+    background-color: rgb(170,170,170);
+    text-align: center;
+    margin: auto;
+    max-width: 90%;
+}
+
+#linkImg{
+    margin-top: 1%;
+    margin-right: 5%;
+    margin-left: 5%;
+    margin-bottom: 3%;
+    width: 400px;
+    height: 300px;
+    max-width: 98%;
+}
+
+#linkImg:hover{
+    opacity: 25%;   
 }

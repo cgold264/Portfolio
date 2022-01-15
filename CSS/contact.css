@@ -11,17 +11,19 @@ a:hover{
 
 #contact{
     background-color: rgb(199, 199, 199);
-    margin: 3%;
-    padding: 5%;
-    max-width: 100%;  
-    display: inline-flex;
+    margin: 3% auto 3% auto;
+    padding: 5% 7% 5% 7%;
+    width: auto;
+    max-width: 80%; 
 }
 
 #contactPhoto{
     width: 500px;
     height: 500px;
-    max-width: 90%;
-    max-width: 90%;
+    max-width: 100%;
+    height: auto;
+    margin: none;
+    float: left;
 }
 
 .contactInfo{
@@ -29,15 +31,24 @@ a:hover{
     animation-duration: 5s;
     font-size: 40px;
     margin-top: 10%;
-    width: 500px;
-    height: 500px;
     max-width: 100%;
+    float: left;
 }
 
 .contactLinks{
     margin: 40px;
     max-height: 200px;
     max-width: 200px;
+}
+
+.ulContact{
+    list-style-type: none;
+    margin: none;
+}
+
+.liContact{
+    margin: 2%;
+
 }
 
 @keyframes contactInfo{
