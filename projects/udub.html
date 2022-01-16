@@ -183,218 +183,162 @@ public int compareTo(HuffmanNode other){
         </div>
     </div>
         <div id="projectDisplayCode">
-            <div class="projectTitle">Anagram Solver</div>
+            <div class="projectTitle">Evil Hangman</div>
             <figure>
                 <pre>
                     <code>
 import java.util.*;
 //Connor Goldschmidt
 //TA: Lisi Case
-//11/18/2021
-
-//The AnagramSolver class stores a given dictionary with the intention of
-//returning a combination of anagrams of a given string
-public class AnagramSolver {
-   private Map<String, LetterInventory> processedDictionary;
-   private List<String> dictionary;
-   
-   //pre: dictionary must be non empty and contain non empty sequences of letters, 
-   //it should not contain duplicates
-   //post: Creates a new AnagramSolver object and stores the given dictionary
-   public AnagramSolver(List<String> dictionary){
-      processedDictionary = new HashMap<>();
-      this.dictionary = dictionary;
-      for(String temp : dictionary){
-         processedDictionary.put(temp, new LetterInventory(temp)); 
-      }
-   }
-   
-   //pre: max > 0, throws IllegalArgumentException if not, 
-   /*post: prints a series of anagrams of all of the combinations the given string, will only 
-   print an anagram if the number of words in the anagram is less than or equal to "max", 
-   if max is 0 it will print all of the anagrams in the dictionary*/
-   public void print(String text, int max){
-      if(max < 0){
-         throw new IllegalArgumentException();
-      }    
-      LetterInventory temp = new LetterInventory(text);
-      print(temp, max, new ArrayList<>(), manageWords(temp, dictionary));  
-   }
-   
-   /*pre: input "text" is a letterInverventory representation of intial string "text", 
-   "max" represents the passed max number of combined words for each anagram, "buildUp" 
-   is a list of the current construction of words for each anagram, this is updated 
-   on each recursion call, "setConsider" is the pruned list of words that can be 
-   considered for the input "text"*/
-   /*post: prints each potenial anagram after iterating throug each potenital word in 
-   set condidered, will only print combinations of anagrams with words less than or 
-   equal to max, will print all combinations if max is 0*/
-   private void print(LetterInventory text, int max, List<String> buildUp, List<String> set){
-      if(text.isEmpty()){
-         System.out.println(buildUp);
-      } else if(max == 0 || max > buildUp.size()){
-         for(String temp : set){
-            LetterInventory tempLetterInventory = text.subtract(processedDictionary.get(temp));
-            if(tempLetterInventory != null){
-               buildUp.add(temp);
-               print(tempLetterInventory, max, buildUp, set);
-               buildUp.remove(buildUp.size() - 1);
+//10/28/2021
+//The HangManager Class creates and manages a game of hangman
+public class HangmanManager{
+    private Set<String> dictionary;
+    private int remainingGuesses;
+    private Set<Character> guesses;
+    private String pattern;
+    
+    //pre: length >= 1 and max >= 0, if not an IllegalArgumentException is thrown
+    //post: Constructs a new object that stores all of the words in the given directory
+    //that are equal to the given length
+    public HangmanManager(Collection<String> dictionary, int length, int max){
+        if(length < 1 || max < 0){
+            throw new IllegalArgumentException();
+        }
+        this.dictionary = new TreeSet<>();
+        pattern = "-";
+        guesses = new TreeSet<>();
+        remainingGuesses = max;
+        for(int i = 0; i < length - 1; i++){
+            pattern += " -";
+        }
+        for(String temp : dictionary){
+            if(temp.length() == length){
+            this.dictionary.add(temp);
             }
-         }
-      }          
-   }
-   
-   //post: prunes the given list of words to words that only contain letters found
-   //in the given "word" 
-   private List<String> manageWords(LetterInventory word, List<String> prune){
-      List<String> tempReturn = new LinkedList<>();
-      for(String temp : prune){
-         if(word.subtract(processedDictionary.get(temp)) != null){
-            tempReturn.add(temp);
-         }
-      }
-      return tempReturn;
-   }
-}
-
-                    </code>
-                </pre>
-            </figure>
-            <div class="projectTxt">
-                In this assessment, I created a class called AnagramSolver that uses a dictionary to print all anagram
-                phrases of a given word or phrase. I used recursive backtracking to implement my algorithm.
-            </div>
-    </div>
-            <div id="projectDisplayCode">
-                <div class="projectTitle">Assassin Manager</div>
-                <figure>
-                    <pre>
-                        <code>
-import java.util.*;
-//Connor Goldschmidt
-//TA: Lisi Case
-//The AssassinManager class tracks the current ring and creates a graveyard of 
-//the players who have been eleminated
-public class AssassinManager {
-   private AssassinNode front;
-   private AssassinNode graveyardFront;
-
-   //pre: input array must not be null	
-   //post: creates a AssassinManger object that stores the list of participating names
-   public AssassinManager(List<String> names){
-      if(names.size() == 0){
-         throw new IllegalArgumentException();
-      }
-      front = new AssassinNode(names.get(0));
-      AssassinNode temp = front;
-      for(int i = 1; i < names.size(); i++){
-         front.next = new AssassinNode(names.get(i), front.next);
-         front = front.next;
-      }
-      front = temp;
-   }  
-
-   //post: Prints a list of each player in the current kill ring and their current target
-   public void printKillRing(){
-      AssassinNode t = front;
-      while(t.next != null){
-         System.out.println("    " + t.name + " is stalking " + t.next.name);
-         t = t.next;
-      } 
-      System.out.println("    " + t.name + " is stalking " + front.name);
-   }
+        }
+    }
     
-   //post: Prints all of the players who have been killed and the player who eliminated them
-   public void printGraveyard(){
-      AssassinNode t = graveyardFront;
-      while(t != null){
-         System.out.println("    " + t.name + " was killed by " + t.killer);
-         t = t.next;
-      }
-   }
-
-   //post: returns true if the input name, regaurdless of case size, is contained 
-   //in the current kill ring, returns false if otherwise
-   public boolean killRingContains(String name){
-      return contains(front, name);
-   }
+    //post: returns a Set of strings that represent the current words being considered
+    //for the game
+    public Set<String> words(){
+        return dictionary;
+    }
+        
+    //post: returns an integer representation of the current remaining guess the player has
+    public int guessesLeft(){
+        return remainingGuesses;
+    }
+        
+    //pre: the current dictionary must not be empty, throws an IllegalStateException if not
+    //post: returns a string representation of the current pattern
+    public String pattern(){
+        if(dictionary.isEmpty()){
+            throw new IllegalStateException();
+        }
+        return pattern;
+    }
     
-   //post: returns true if the input name, regaurdless of case size, is contained in the 
-   //current graveyard, returns false if otherwise
-   public boolean graveyardContains(String name){
-      return contains(graveyardFront, name);
-   }
+    //post: returns a set of characters that represents all of the characters the user
+    // has guessed
+    public Set<Character> guesses(){
+        return guesses;
+    }
     
-   //post: returns true if the game is over, meaning there is one player in the kill
-   //ring, false if it not
-   public boolean gameOver(){
-      if(front.next != null){
-         return false;
-      }
-      return true;
-   } 
+    /*pre: dictionary must not be empty, the remaining guesses must not be less than one, 
+    throws IllegalStateException if not and the given character must not have been 
+    already guessed, throws an IllegalArgumentException if so*/
+    /*post: if the given character is contained in the given word, returns an int 
+    representation of the number of character the hidden word contains and reveals 
+    the location of the character in the hidden word, the stored letters of guessed 
+    characters, the current pattern, and possible words being considered are updated, 
+    otherwise it decreases the number of guesses by one*/
+    public int record(char guess){
+        if(dictionary.isEmpty() || guessesLeft() < 1){
+            throw new IllegalStateException();
+        }
+        if(guesses.contains(guess)){
+            throw new IllegalArgumentException();
+        }
+        guesses.add(guess);
+        Map<String, Set<String>> temp = sortPatterns(guess);
+        return updateCurrentPattern(maxPattern(temp));
+    }
     
-   //post: returns a string representation of the winner if the game is over,
-   //returns null if the game is not over
-   public String winner(){
-      if(gameOver()){
-         return front.name;
-      }
-      return null;
-   }
-
-   //pre: game must not be over, throws IllegalStateException if not, input string must be
-   //contained in the kill ring, throws IllegalArgumentException if not 
-   //post: removes the given name, regaurdless of case size, from the kill ring and 
-   //moves it to the graveyard, stores the killer of the given name 
-   public void kill(String name){
-      if(gameOver()){
-         throw new IllegalStateException();
-      }
-      if(!(killRingContains(name))){
-         throw new IllegalArgumentException();
-      }
-      AssassinNode temp = front;
-      AssassinNode graveyardTemp = null;
-      while(temp.next != null && !returnCheck(temp.next, name)){
-         temp = temp.next;
-      }
-      if(temp.next == null){
-         graveyardTemp = front;
-         front = front.next;
-         graveyardTemp.killer = temp.name;
-      }else{
-         graveyardTemp = temp.next;
-         temp.next = temp.next.next;
-         graveyardTemp.killer = temp.name;           
-      }
-      graveyardTemp.next = graveyardFront;
-      graveyardFront = graveyardTemp;
-   }
-       
-   //post: returns true if the given "name" is equal to the name in the "group"
-   private boolean returnCheck(AssassinNode group, String name){
-      return ((group.name.toLowerCase()).equals(name.toLowerCase()));
-   }
-       
-   //post: returns true if the given "name" is contained in the given "group"
-   private boolean contains(AssassinNode group, String name){
-      AssassinNode temp = group;
-      while(temp != null){
-         if(returnCheck(temp, name)){
-            return true;
-         }
-         temp = temp.next;
-      }
-      return false;
-   } 
+    //post: returns a map of string keys, that represent the pattern
+    //with values of sets of strings that 
+    private Map<String, Set<String>> sortPatterns(char guess){
+        Map<String, Set<String>> hangManSet = new TreeMap<>();
+        String tempPattern = "";
+        for(String temp : dictionary){
+            tempPattern = makeKey(temp, guess);
+            if(!(hangManSet.containsKey(tempPattern))){
+            hangManSet.put(tempPattern, new TreeSet<String>());
+            } 
+            hangManSet.get(tempPattern).add(temp);
+        }
+        return hangManSet;
+    }
+    
+    //post: returns a string representation of the pattern of the 
+    //given char in the given string
+    private String makeKey(String word, char guess){
+        String temp = "";
+        for(int i = 0; i < word.length(); i++){
+            if(word.charAt(i) == guess){
+            temp += guess;
+            } else {
+            temp += "-";
+            }
+            temp += " "; 
+        }
+        return temp.substring(0, temp.length() - 1);
+    }
+    
+    //post: returns a string representation of the pattern that 
+    //has the most words assiciated with it
+    private String maxPattern(Map<String, Set<String>> hangManSet){
+        int maxSize = 0;
+        String maxStrings = "";
+        for(String temp : hangManSet.keySet()){
+            int tempSize = hangManSet.get(temp).size();
+            if(maxSize < tempSize){
+            maxSize = tempSize;
+            maxStrings = temp;
+            }
+        }
+        dictionary = hangManSet.get(maxStrings);
+        return maxStrings;
+    } 
+    
+    //post: updates the pattern with the new pattern being considered
+    private int updateCurrentPattern(String current){
+        String temp = pattern;
+        pattern = "";
+        int count = 0;
+        for(int i = 0; i < temp.length(); i++){
+            if(temp.charAt(i) == '-' && current.charAt(i) == '-'){
+            pattern+= "-";
+            } else if(temp.charAt(i) != '-'){
+            pattern += temp.charAt(i);
+            }else{
+            pattern += current.charAt(i);
+            count++;
+            }
+        } 
+        if(count == 0){
+            remainingGuesses--;
+        }
+        return count;
+    }   
 }
     </code>
     </pre>
 </figure>
 <div class="projectTxt">
-    In this assessment, I created a class called AnagramSolver that uses a dictionary to print all anagram
-    phrases of a given word or phrase. I used recursive backtracking to implement my algorithm.
+    In evil hangman, the computer delays picking a specific secret word 
+    until it is forced to do so. In the game, instead of beginning by choosing a word,
+    the computer narrows down its set of possible answers as the user makes guesses.
 </div>
 </div>
             
