@@ -1,3 +1,4 @@
+/*CSS for the website Homepage*/
 .containerHome{
     margin: none;
     padding: none;
@@ -22,10 +23,9 @@ p.textLeft{
 }
 
 img.homepage{
-    margin: none;
-    height: 700px;
+    height: auto; 
     width: 1150px;
-    height: auto;  
+    margin: none;
     max-width: 100%;
     float: right;
 }

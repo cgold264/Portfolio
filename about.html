@@ -2,96 +2,106 @@
 <!DOCTYPE html>
 <html lang="en">
     <style>@import "CSS/website.css"; @import "CSS/about.css";</style>
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="Images/favicon.png">
-    <title>About</title>
-</head>
-<div class="wrapper">
-<header>
-    <div id="headingContainer">
-    <img id="headingImage" src="Images/photo_background.JPG">
-    </div>
-    <div class="container" id="navBar">
-        <a href="index.html" class="barItem"><b>Home</b></a>
-        <a href="about.html" class="barItem"><b>About</b></a>
-        <a href="projects.html" class="barItem"><b>Projects</b></a>
-        <a href="contact.html" class="barItem"><b>Contact</b></a>  
-    </div>
-</header>
-<body>
-    <div id="bodyRight">
-        <div id="slideshow">
-            <!--This is the slideshow and images that are looped over-->
-            <img class="mySlides" src="Images/photo_hike.JPG">
-            <img class="mySlides" src="Images/photo_redrocks.JPG">
-            <img class="mySlides" src="Images/photo_avs2.JPG">
-            <img class="mySlides" src="Images/photo_camping2.JPG">
-        </div>
-        <!--Small bio containing who I am-->
-        <p class="title">
-            <b>Outside Professional Life</b>
-        </p>
-        <p class="text">
-            &nbsp;&nbsp;&nbsp;&nbsp;As an outdoor enthusiast, I find myself spending a great deal of time skiing, sport climbing, hiking, off-roading and camping with my family. 
-            I also enjoy activies such as soccer, pickleball, and spikeball. Beyond athletics, I enjoy exploring and experiencing 
-            difficult cultures through travel. 
-        </p>
-    </div>
-        <div id="education">
-            <p class="title">
-                <b>Education</b>
-            </p>
-            <div class="container"> 
-                <p class="text">
-                    I am currently pursuing a degree in Computer Science B.S. from Gonzaga University. I plan on emphasizing in Software Engineering and minoring in Cyber Security.
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/x-icon" href="Images/favicon.png">
+        <title>About</title>
+    </head>
+    <div class="wrapper">
+        <header>
+            <div id="headingContainer">
+            <img id="headingImage" src="Images/photo_background.JPG">
+            </div>
+            <!--Navigation bar with active links that change color on hover-->
+            <div class="container" id="navBar">
+                <a href="index.html" class="barItem"><b>Home</b></a>
+                <a href="about.html" class="barItem"><b>About</b></a>
+                <a href="projects.html" class="barItem"><b>Projects</b></a>
+                <a href="contact.html" class="barItem"><b>Contact</b></a>  
+            </div>
+        </header>
+        <body>
+            <div id="bodyRight">
+                <div id="slideshow">
+                    <!--This is the slideshow and images that are looped over-->
+                    <img class="mySlides" src="Images/photo_hike.JPG">
+                    <img class="mySlides" src="Images/photo_redrocks.JPG">
+                    <img class="mySlides" src="Images/photo_avs2.JPG">
+                    <img class="mySlides" src="Images/photo_camping2.JPG">
+                </div>
+                <!--Small bio containing who I am-->
+                <p class="title">
+                    <b>Outside Professional Life</b>
                 </p>
-            <!--Bulldog image and link, links to the Gonzaga Computer Science homepage-->
-                <div>
-                    <a href="https://www.gonzaga.edu/school-of-engineering-applied-science/degrees-and-programs/computer-science">
-                        <img src="Images/photo_gonzaga.png" id="gonzagaimg"> 
-                    </a>
+                <p class="text">
+                    &nbsp;&nbsp;&nbsp;&nbsp;As an outdoor enthusiast, I find myself spending 
+                    a great deal of time skiing, sport climbing, hiking, off-roading and camping 
+                    with my family. I also enjoy activies such as soccer, pickleball, and spikeball. 
+                    Beyond athletics, I enjoy exploring and experiencing difficult cultures through 
+                    travel. 
+                </p>
+            </div>
+            <div id="education">
+                <p class="title">
+                    <b>Education</b>
+                </p>
+                <div class="container"> 
+                    <p class="text">
+                        I am currently pursuing a degree in Computer Science B.S. 
+                        from Gonzaga University. I plan on emphasizing in Software 
+                        Engineering and minoring in Cyber Security.
+                    </p>
+                    <!--Bulldog image and link, links to the Gonzaga Computer Science homepage-->
+                    <div>
+                        <a href="https://www.gonzaga.edu/school-of-engineering-applied-science/degrees-and-programs/computer-science">
+                            <img src="Images/photo_gonzaga.png" id="gonzagaimg" alt="gonzagaImg"> 
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div id="bodyRight">
-            <!--Why Computer Science-->
-            <p class="title">
-                <b>Why Computer Science?</b>
-            </p>
-            <p class="text">
-                &nbsp;&nbsp;&nbsp;&nbsp;My interest in Computer Science comes from my motivation to make the world a better place.
-                While I significantly enjoy working on projects and assignments, I believe I can use my skills to 
-                greatly influence society and ultimately improve the lives of others. I want 
-                to specialize in security in order to protect people and their assets.
-            </p>
-        </div>
-    <div id="locationTitle" ><b>Where I'm Located</b></div>
-    <!--Images of Boulder, Colorado and Spokane, Washington both act as links to their respective locations on maps-->
-    <div id="locationDisplay">
-        <a class="location" href="https://duckduckgo.com/?t=ffab&q=boulder+colorado&iax=images&ia=images&iaxm=about">
-            <img class="locationImage" src="Images/photo_boulder.png">
-        </a>
-        <a class="location" href="https://duckduckgo.com/?t=ffab&q=spokane&ia=web&iaxm=about">
-            <img class="locationImage" src="Images/photo_spokane.png">
-        </a>
+            <div id="bodyRight">
+                <!--Why Computer Science-->
+                <p class="title">
+                    <b>Why Computer Science?</b>
+                </p>
+                <p class="text">
+                    &nbsp;&nbsp;&nbsp;&nbsp;My interest in Computer Science comes 
+                    from my motivation to make the world a better place. While I 
+                    significantly enjoy working on projects and assignments, I 
+                    believe I can use my skills to greatly influence society and 
+                    ultimately improve the lives of others. I want to specialize in 
+                    security in order to protect people and their assets.
+                </p>
+            </div>
+            <div id="locationTitle">
+                <b>Where I'm Located</b>
+            </div>
+            <!--Images of Boulder, Colorado and Spokane, Washington both act as links to their respective locations on maps-->
+            <div id="locationDisplay">
+                <a class="location" href="https://duckduckgo.com/?t=ffab&q=boulder+colorado&iax=images&ia=images&iaxm=about">
+                    <img class="locationImage" src="Images/photo_boulder.png" alt="BoulderImg">
+                </a>
+                <a class="location" href="https://duckduckgo.com/?t=ffab&q=spokane&ia=web&iaxm=about">
+                    <img class="locationImage" src="Images/photo_spokane.png" alt="SpokaneImg">
+                </a>
+            </div>
+            <script src="JavaScript/about.js"></script>
+        </body>
+        <!--The footer contains links to my linkedIn, Email, and Instagram-->
+        <footer>
+            <div id="foot" class="container">
+                <a href="https://www.linkedin.com/in/connor-goldschmidt-80112a214/">
+                    <img class="links" src="Images/photo_linkedIn.png" alt="linkedIn">
+                </a>
+                <a href="mailto:cgoldschmidt04@gmail.com">
+                    <img class="links" src="Images/photo_gmail.png" alt="gmail">
+                </a>
+                <a href="https://www.instagram.com/connorgoldschmidt/">
+                    <img class="links" src="Images/photo_instagram.png" alt="instagram">
+                </a>
+            </div>
+        </footer>
     </div>
-    <script src="JavaScript/about.js"></script>
-</body>
-<footer>
-    <div id="foot" class="container">
-       <a href="https://www.linkedin.com/in/connor-goldschmidt-80112a214/">
-           <img class="links" src="Images/photo_linkedIn.png">
-       </a>
-       <a href="mailto:cgoldschmidt04@gmail.com">
-            <img class="links" src="Images/photo_gmail.png">
-        </a>
-        <a href="https://www.instagram.com/connorgoldschmidt/">
-            <img class="links" src="Images/photo_instagram.png">
-        </a>
-    </div>
-</footer>
-</div>
 </html>

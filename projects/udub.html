@@ -1,31 +1,34 @@
+<!--udub Projects html-->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="Images/favicon.png">
-    <title>Projects Udub</title>
-</head>
-<style>@import "../CSS/website.css"; @import "../CSS/projects.css";</style>
-<div class="wrapper">   
-<header>
-    <div id="headingContainer">
-        <img id="headingImage" src="../Images/photo_background.JPG">
-    </div>
-    <div class="container" id="navBar">
-        <a href="../index.html" class="barItem"><b>Home</b></a>
-        <a href="../about.html" class="barItem"><b>About</b></a>
-        <a href="../projects.html" class="barItem"><b>Projects</b></a>
-        <a href="../contact.html" class="barItem"><b>Contact</b></a>  
-    </div>
-</header>
-<body>
-    <div id="projectDisplayCode">
-        <div class="projectTitle">Huffman Code</div>
-        <figure>
-            <pre>
-                <code>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/x-icon" href="Images/favicon.png">
+        <title>Projects Udub</title>
+    </head>
+    <style>@import "../CSS/website.css"; @import "../CSS/projects.css";</style>
+    <div class="wrapper">   
+        <header>
+            <div id="headingContainer">
+                <img id="headingImage" src="../Images/photo_background.JPG">
+            </div>
+            <!--Navigation bar with active links that change color on hover-->
+            <div class="container" id="navBar">
+                <a href="../index.html" class="barItem"><b>Home</b></a>
+                <a href="../about.html" class="barItem"><b>About</b></a>
+                <a href="../projects.html" class="barItem"><b>Projects</b></a>
+                <a href="../contact.html" class="barItem"><b>Contact</b></a>  
+            </div>
+        </header>
+        <body>
+            <!--Code for my Huffman Code project-->
+            <div id="projectDisplayCode">
+                <div class="projectTitle">Huffman Code</div>
+                <figure>
+                    <pre>
+                        <code>
 import java.util.*;
 import java.io.*;
 /*Connor Goldschmidt
@@ -174,20 +177,24 @@ public class HuffmanCode{
         }
     }
 }              
-                </code>
-            </pre>
-        </figure>
-        <div class="projectTxt">
-            Huffman encoding is an algorithm devised by David A. Huffman of MIT in 1952 for compressing data to
-            make a file occupy a smaller amount of space. In this assignment, I created a simulation of this compression by making
-            classes HuffmanCode and HuffmanNode to be used in compression of data.
-        </div>
-    </div>
-        <div id="projectDisplayCode">
-            <div class="projectTitle">Evil Hangman</div>
-            <figure>
-                <pre>
-                    <code>
+                        </code>
+                    </pre>
+                </figure>
+                <!--Description of Huffman Node project-->
+                <div class="projectTxt">
+                    Huffman encoding is an algorithm devised by David A. Huffman of 
+                    MIT in 1952 for compressing data to make a file occupy a smaller 
+                    amount of space. In this assignment, I created a simulation of this 
+                    compression by making classes HuffmanCode and HuffmanNode to be used 
+                    in compression of data.
+                </div>
+            </div>
+            <!--Code for Evil Hangman Project-->
+            <div id="projectDisplayCode">
+                <div class="projectTitle">Evil Hangman</div>
+                    <figure>
+                        <pre>
+                            <code>
 import java.util.*;
 //Connor Goldschmidt
 //TA: Lisi Case
@@ -333,20 +340,23 @@ public class HangmanManager{
         return count;
     }   
 }
-    </code>
-    </pre>
-</figure>
-<div class="projectTxt">
-    In evil hangman, the computer delays picking a specific secret word 
-    until it is forced to do so. In the game, instead of beginning by choosing a word,
-    the computer narrows down its set of possible answers as the user makes guesses.
-</div>
-</div>
-<div id="projectDisplayCode">
-    <div class="projectTitle">Anagram Solver</div>
-    <figure>
-        <pre>
-            <code>
+                        </code>
+                    </pre>
+                </figure>
+                <!--Evil Hangman Project Description-->
+                <div class="projectTxt">
+                    In evil hangman, the computer delays picking a specific secret word 
+                    until it is forced to do so. In the game, instead of beginning by 
+                    choosing a word, the computer narrows down its set of possible answers 
+                    as the user makes guesses.
+                </div>
+            </div>
+            <div id="projectDisplayCode">
+                <!--Code for the Anagram Solver Project-->
+                <div class="projectTitle">Anagram Solver</div>
+                    <figure>
+                        <pre>
+                            <code>
 import java.util.*;
 //Connor Goldschmidt
 //TA: Lisi Case
@@ -416,27 +426,29 @@ public class AnagramSolver {
       return tempReturn;
    }
 }
-            </code>
-        </pre>
-    </figure>
-    <div class="projectTxt">
-        In this assessment, I created a class called AnagramSolver that uses a dictionary to print all anagram
-        phrases of a given word or phrase. You will use recursive backtracking to implement your algorithm.
+                    </code>
+                </pre>
+            </figure>
+            <!--Description of Anagram Solver Project-->
+            <div class="projectTxt">
+                In this assessment, I created a class called AnagramSolver that uses a dictionary to print all anagram
+                phrases of a given word or phrase. You will use recursive backtracking to implement your algorithm.
+            </div>
+        </div>
+        </body>       
+        <!--The footer contains links to my linkedIn, Email, and Instagram-->
+        <footer>
+            <div id="foot" class="container">
+            <a href="https://www.linkedin.com/in/connor-goldschmidt-80112a214/" target="_blank">
+                <img class="links" src="../Images/photo_linkedIn.png" alt="linkedIn">
+            </a>
+            <a href="mailto:cgoldschmidt04@gmail.com" target="_blank">
+                    <img class="links" src="../Images/photo_gmail.png" alt="Email"> 
+                </a>
+                <a href="https://www.instagram.com/connorgoldschmidt/" target="_blank">
+                    <img class="links" src="../Images/photo_instagram.png" alt="Instagram">
+                </a>
+            </div>
+        </footer>
     </div>
-</div>
-</body>       
-<!--The footer contains links to my linkedIn, Email, and Instagram-->
-<footer>
-    <div id="foot" class="container">
-       <a href="https://www.linkedin.com/in/connor-goldschmidt-80112a214/" target="_blank">
-           <img class="links" src="../Images/photo_linkedIn.png" alt="linkedIn">
-       </a>
-       <a href="mailto:cgoldschmidt04@gmail.com" target="_blank">
-            <img class="links" src="../Images/photo_gmail.png" alt="Email"> 
-        </a>
-        <a href="https://www.instagram.com/connorgoldschmidt/" target="_blank">
-            <img class="links" src="../Images/photo_instagram.png" alt="Instagram">
-        </a>
-    </div>
-</footer>
 </html>
