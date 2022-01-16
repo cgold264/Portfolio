@@ -36,6 +36,7 @@ a.barItem{
     padding-bottom: 5px;
     margin-left: 0;
     margin-right: 5px;
+    margin-top: none;
     text-decoration: none;
     font-size: 20px;
     color: black;
@@ -71,20 +72,23 @@ img.links:hover{
 
 #headingImage{
     width: 100%;
-    height: 100%;
+    height: auto;
     margin: none;
     padding: none;
 }
 #headingContainer{
-    margin:none;
-    padding:none;
-    height: 100px;
+    margin:0;
+    padding:0;
+    height: auto;
     max-width: 100%;
+    background-color: rgb(61, 92, 150);
 }
 #navBar {
     float: left;
     background-color: rgb(61, 92, 150);
     width: 100%;
+    margin:none;
+    padding-bottom: 0.5%;
 }
 
 #foot {

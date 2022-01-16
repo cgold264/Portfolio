@@ -1,3 +1,4 @@
+/*Projects CSS*/
 .projectImg{
     margin: 1%;
     width: 500px;
@@ -17,6 +18,7 @@
     background-color: rgb(161, 161, 161);
     text-align: center;
     font-size: 30px;
+    font-weight: bold;
 }
 
 .projectBackground{
