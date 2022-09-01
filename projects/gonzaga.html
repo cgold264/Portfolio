@@ -23,19 +23,2426 @@
             </div>
         </header>
         <body>
-            <div class="projectTitle">Gonzaga Course Work Coming Soon</div>
+            <div id="projectDisplayCode">
+                <div class="projectTitle">BTreeMap API</div>
+                <figure>
+                    <pre>
+                        <code>
+//---------------------------------------------------------------------------
+// NAME: Connor Goldschmidt
+// FILE: btreemap.h
+// DATE: Spring 2022
+// DESC: Map implementation using a 2-3-4 B-Tree 
+//---------------------------------------------------------------------------
+
+#ifndef BTreeMAP_H
+#define BTreeMAP_H
+
+#include "map.h"
+#include "arrayseq.h"
+
+
+
+template<typename K, typename V>
+class BTreeMap : public Map<K,V>
+{
+public:
+
+    // default constructor
+    BTreeMap();
+
+    // copy constructor
+    BTreeMap(const BTreeMap& rhs);
+
+    // move constructor
+    BTreeMap(BTreeMap&& rhs);
+
+    // copy assignment
+    BTreeMap& operator=(const BTreeMap& rhs);
+
+    // move assignment
+    BTreeMap& operator=(BTreeMap&& rhs);  
+
+    // destructor
+    ~BTreeMap();
+    
+    // Returns the number of key-value pairs in the map
+    int size() const;
+
+    // Tests if the map is empty
+    bool empty() const;
+
+    // Allows values associated with a key to be updated. Throws
+    // out_of_range if the given key is not in the collection.
+    V& operator[](const K& key);
+
+    // Returns the value for a given key. Throws out_of_range if the
+    // given key is not in the collection. 
+    const V& operator[](const K& key) const;
+
+    // Extends the collection by adding the given key-value pair.
+    // Expects key to not exist in map prior to insertion.
+    void insert(const K& key, const V& value);
+
+    // Shrinks the collection by removing the key-value pair with the
+    // given key. Does not modify the collection if the collection does
+    // not contain the key. Throws out_of_range if the given key is not
+    // in the collection.
+    void erase(const K& key);
+
+    // Returns true if the key is in the collection, and false otherwise.
+    bool contains(const K& key) const;
+
+    // Returns the keys k in the collection such that k1 <= k <= k2
+    ArraySeq<K> find_keys(const K& k1, const K& k2) const;
+
+    // Returns the keys in the collection in ascending sorted order
+    ArraySeq<K> sorted_keys() const;  
+
+    // Gives the key (as an ouptput parameter) immediately after the
+    // given key according to ascending sort order. Returns true if a
+    // successor key exists, and false otherwise.
+    bool next_key(const K& key, K& next_key) const; 
+
+    // Gives the key (as an ouptput parameter) immediately before the
+    // given key according to ascending sort order. Returns true if a
+    // predecessor key exists, and false otherwise.
+    bool prev_key(const K& key, K& next_key) const; 
+
+    // Removes all key-value pairs from the map.
+    void clear();
+    
+    // Returns the height of the binary search tree
+    int height() const;
+
+    // for debugging the tree
+    void print() const {
+    print("  ", root, height());
+    }
+
+    
+private:
+
+    // node for 2-3-4 tree
+    struct Node {
+    ArraySeq<std::pair<K,V>> keyvals;
+    ArraySeq<Node*> children;
+    // helper functions
+    bool full() const {return keyvals.size() == 3;}
+    bool leaf() const {return children.empty();}
+    K key(int i) const {return keyvals[i].first;}
+    V& val(int i) {return keyvals[i].second;}
+    Node* child(int i) const {return children[i];}
+    };
+
+    // number of key-value pairs in map
+    int count = 0;
+
+    // root node
+    Node* root = nullptr;
+
+    // print helper function
+    void print(std::string indent, Node* st_root, int levels) const;
+    
+    // clean up the tree memory 
+    void clear(Node* st_root);
+
+    // helper function for copy assignment
+    Node* copy(const Node* rhs_st_root) const;
+
+    // split the parent's i-th child
+    void split(Node* parent, int i);
+    
+    // erase helpers
+    void erase(Node* st_root, const K& key);
+    void remove_internal(Node* st_root, int key_idx);
+    void rebalance(Node* st_root, int key_idx, int& child_idx);
+    
+    // find_keys helper
+    void find_keys(const K& k1, const K& k2, const Node* st_root,
+                    ArraySeq<K>& keys) const;
+
+    // sorted_keys helper
+    void sorted_keys(const Node* st_root, ArraySeq<K>& keys) const;
+
+    // height helper
+    int height(const Node* st_root) const;
+    
+};
+
+
+template<typename K, typename V>
+void BTreeMap<K,V>::print(std::string indent, Node* st_root, int levels) const {
+    if (levels == 0)
+    return;
+    if (!st_root)
+    return;
+    std::cout << indent << "("; 
+    for (int i = 0; i < 3; ++i) {
+    if (i != 0)
+        std::cout << ",";
+    if (st_root->keyvals.size() > i)
+        std::cout << st_root->key(i); 
+    else
+        std::cout << "-";
+    }
+    std::cout << ")" << std::endl;
+
+    if (levels > 1) {
+    for (int i = 0; i < st_root->children.size(); ++i)
+        print(indent + " ", st_root->child(i), levels - 1);
+    }
+}
+
+
+//Constructor
+template<typename K, typename V>
+BTreeMap<K,V>::BTreeMap()
+{
+}
+
+//initalizes the copy constructor
+template<typename K, typename V>
+BTreeMap<K,V>::BTreeMap(const BTreeMap& rhs)
+{
+    *this = rhs;
+}
+
+//initalizes the move constructor
+template<typename K, typename V>
+BTreeMap<K,V>::BTreeMap(BTreeMap&& rhs)
+{
+    *this = std::move(rhs);
+}
+
+//initalizes the copy assignment
+template<typename K, typename V>
+BTreeMap<K, V>& BTreeMap<K, V>::operator=(const BTreeMap& rhs)
+{
+    if(this != &rhs){
+    clear();
+    if(rhs.root){
+        root = copy(rhs.root);
+        count = rhs.count;
+    }
+    }
+    return *this;
+}
+
+//initalizes the move assignment
+template<typename K, typename V>
+BTreeMap<K, V>& BTreeMap<K, V>::operator=(BTreeMap&& rhs)
+{
+    if(this != &rhs){
+    clear();
+    root = rhs.root;
+    count = rhs.count;
+    rhs.count = 0;
+    rhs.root = nullptr;
+    }
+    return *this;
+}
+
+//initalizes the destructor
+template<typename K, typename V>
+BTreeMap<K, V>::~BTreeMap()
+{
+    clear();
+}
+
+//returns the number of nodes stored in the tree
+template<typename K, typename V>
+int BTreeMap<K, V>::size() const
+{
+    return count;
+}
+
+//returns true if the tree is empty, false if not
+template<typename K, typename V>
+bool BTreeMap<K, V>::empty() const
+{
+    if(root == nullptr){
+    return true;
+    }
+    return false;
+}
+
+//given a valid key, returns the corrisponding key value
+//throws an out_of_range exception if key is invalid
+template<typename K, typename V>
+V& BTreeMap<K, V>::operator[](const K& key)
+{
+    if(root){
+    Node* temp = root;
+    while(true){
+        int i = temp -> keyvals.size() - 1;
+        while (i >= 0 && temp -> key(i) >= key){
+        if(temp -> key(i) == key){
+            return temp -> val(i);
+        }
+        i--;
+        }
+        if(temp -> leaf()){
+        break;
+        }
+        temp = temp -> child(i + 1);
+    }
+    }
+    throw std::out_of_range("Out of Range in Operator");
+}
+
+//given a valid key, returns the corrisponding key value as a constant
+//throws an out_of_range exception if key is invalid
+template<typename K, typename V>
+const V& BTreeMap<K, V>::operator[](const K& key) const
+{
+    if(root){
+    Node* temp = root;
+    while(true){
+        int i = temp -> keyvals.size() - 1;
+        while (i >= 0 && temp -> key(i) >= key){
+        if(temp -> key(i) == key){
+            return temp -> val(i);
+        }
+        i--;
+        }
+        if(temp -> leaf()){
+        break;
+        }
+        temp = temp -> child(i + 1);
+    }
+    }
+    throw std::out_of_range("Out of Range in Operator");
+}
+
+//inserts the given key, value pair into a leaf node in the tree
+template<typename K, typename V>
+void BTreeMap<K, V>::insert(const K& key, const V& value)
+{
+    if(!root){
+    root = new Node;
+    root -> keyvals.insert(std::make_pair(key, value), 0);
+    } else {
+    if(root -> full()){
+        Node* left = root;
+        root = new Node;
+        root -> children.insert(left, 0);
+        split(root, 0);
+    }
+    Node* temp = root;
+    while(!temp -> leaf()){
+        int i = temp -> keyvals.size() - 1;
+        while (i >= 0 && temp -> key(i) > key){
+            i--;
+        }
+        if(temp -> child(i + 1) -> full()){
+            split(temp, i + 1);
+            if(temp -> key(i + 1) < key){
+            i++;
+            }
+        }
+        temp = temp -> child(i + 1);
+        }
+    int index = temp -> keyvals.size() - 1;
+    while (index >= 0 && temp -> key(index) > key){
+        index--;
+    }
+    temp -> keyvals.insert(std::make_pair(key, value), index + 1);
+    }
+    count++;
+}
+
+//removes the given key and corrisponding value pair from the tree
+template<typename K, typename V>
+void BTreeMap<K, V>::erase(const K& key)
+{
+    erase(root, key);
+    if(root -> keyvals.empty()){
+    Node* left_child = nullptr;
+    if(root -> children.size() > 0){
+        left_child = root -> child(0);
+    }
+    delete root;
+    root = left_child;
+    }
+    count--;
+}
+
+//returns true if given key is in the tree, false if not
+template<typename K, typename V>
+bool BTreeMap<K, V>::contains(const K& key) const
+{
+    if(root){
+    Node* temp = root;
+    while(!temp -> leaf()){
+        int i = temp -> keyvals.size() - 1;
+        while (i >= 0 && temp -> key(i) >= key){
+            if(temp -> key(i) == key){
+            return true;
+            }
+            i--;
+        }
+        temp = temp -> child(i + 1);
+        }
+    int index = temp -> keyvals.size() - 1;
+    while (index >= 0){
+        if(temp -> key(index) == key){
+        return true;
+        }
+        index--;
+    }
+    }
+    return false;
+}
+
+//returns an ArraySeq of key values that are between k1 and k2
+template<typename K, typename V>
+ArraySeq<K> BTreeMap<K, V>::find_keys(const K& k1, const K& k2) const
+{
+    ArraySeq<K> keys;
+    if(root){
+    find_keys(k1, k2, root, keys);
+    }
+    return keys;
+}
+
+//returns an array seq of all of the keys in sorted order
+template<typename K, typename V>
+ArraySeq<K> BTreeMap<K, V>::sorted_keys() const
+{
+    ArraySeq<K> keys;
+    if(root){
+    sorted_keys(root, keys);
+    }
+    return keys;
+}
+
+//returns the next key value in the tree
+template<typename K, typename V>
+bool BTreeMap<K, V>::next_key(const K& key, K& next_key) const
+{
+    if(!root){
+    return false;
+    }
+    Node* temp = root;
+    K temp_next_key = key;
+    while(!temp -> leaf()){
+    int index = 0;
+    while(index < temp -> keyvals.size() - 1 && temp -> key(index) < key){
+        index++;
+    }
+    if(temp -> key(index) > key && (temp -> key(index) < temp_next_key || temp_next_key == key)){
+        temp_next_key = temp -> key(index);
+    } else if(key == temp -> key(index)){
+        Node* predecessor = temp -> child(index + 1);
+        while(!predecessor -> leaf()){
+        predecessor = predecessor -> child(0);
+        }
+        next_key = predecessor -> key(0);
+        return true;
+    }
+    
+    if(temp -> key(index) < key){
+        index++;
+    }
+    temp = temp -> child(index);
+    }
+    for(int i = 0; i < temp -> keyvals.size(); i++){
+    if(temp -> key(i) > key && (temp -> key(i) < temp_next_key || temp_next_key == key)){
+        temp_next_key = temp -> key(i);
+    }
+    }
+    if(temp_next_key == key){
+    return false;
+    }
+    next_key = temp_next_key;
+    return true;
+}
+
+//returns the previous key value in the tree
+template<typename K, typename V>
+bool BTreeMap<K, V>::prev_key(const K& key, K& prev_key) const
+{
+    if(!root){
+    return false;
+    }
+    Node* temp = root;
+    K temp_prev_key = key;
+    while(!temp -> leaf()){
+    int index = 0;
+    while(index < temp -> keyvals.size() - 1 && temp -> key(index) < key){
+        if(temp -> key(index) < key && (temp -> key(index) > temp_prev_key || temp_prev_key == key)){
+        temp_prev_key = temp -> key(index);
+        }
+        index++;
+    }
+    if(temp -> key(index) < key && (temp -> key(index) > temp_prev_key || temp_prev_key == key)){
+        temp_prev_key = temp -> key(index);
+    } else if(key == temp -> key(index)){
+        
+        Node* predecessor = temp -> child(index);
+        while(!predecessor -> leaf()){
+        predecessor = predecessor -> child(predecessor -> children.size() - 1);
+        }
+        prev_key = predecessor -> key(predecessor -> keyvals.size() - 1);
+        return true;
+    }
+    if(temp -> key(index) < key){
+        index++;
+    }
+    temp = temp -> child(index);
+    }
+    for(int i = 0; i < temp -> keyvals.size(); i++){
+    if(temp -> key(i) < key && (temp -> key(i) > temp_prev_key || temp_prev_key == key)){
+        temp_prev_key = temp -> key(i);
+    }
+    }
+    if(temp_prev_key == key){
+    return false;
+    }
+    prev_key = temp_prev_key;
+    return true;
+}
+
+//deletes all of the values in the tree
+template<typename K, typename V>
+void BTreeMap<K, V>::clear()
+{
+    if(root){
+    clear(root);
+    count = 0;
+    root = nullptr;
+    }
+}
+
+//returns the largest root to leaf path in the tree
+template<typename K, typename V>
+int BTreeMap<K, V>::height() const
+{
+    if(!root){
+    return 0;
+    }
+    Node* temp = root;
+    int count = 0;
+    while(!temp -> leaf()){
+    count++;
+    temp = temp -> child(0);
+    }
+    return count + 1;
+}
+
+//helper function for the clear method
+template<typename K, typename V>
+void BTreeMap<K, V>::clear(Node* st_root)
+{
+    if(st_root -> leaf()){
+    st_root -> keyvals.clear();
+    st_root -> children.clear();
+    delete st_root;
+    } else {
+    for(int i = 0; i < st_root -> children.size(); i++){
+        clear(st_root -> child(i));
+    }
+    st_root -> keyvals.clear();
+    st_root -> children.clear();
+    delete st_root;
+    }
+}
+    
+// helper function for copy assignment
+template<typename K, typename V>
+typename BTreeMap<K,V>::Node* BTreeMap<K, V>::copy(const Node* rhs_st_root) const
+{
+    Node* new_node = new Node;
+    if(rhs_st_root -> leaf()){
+    for(int i = 0; i < rhs_st_root -> keyvals.size(); i++){
+        new_node -> keyvals.insert(rhs_st_root -> keyvals[i], new_node -> keyvals.size());
+    }
+    return new_node;
+    } else {
+    for(int i = 0; i < rhs_st_root -> keyvals.size(); i++){
+        new_node -> keyvals.insert(rhs_st_root -> keyvals[i], new_node -> keyvals.size());
+        new_node -> children.insert(copy(rhs_st_root -> child(i)), new_node -> children.size());
+    }
+    new_node -> children.insert(copy(rhs_st_root -> child(rhs_st_root -> children.size())), new_node -> children.size());
+    return new_node;
+    }
+}
+
+//Helper function for the insert splitting case
+template<typename K, typename V>
+void BTreeMap<K, V>::split(Node* parent, int i)
+{
+    Node* child = parent -> child(i);
+    Node* temp = new Node;
+    temp -> keyvals.insert(child -> keyvals[2], 0);
+    child -> keyvals.erase(2);
+    if(!child -> leaf()){
+    temp -> children.insert(child -> children[2], temp -> children.size());
+    temp -> children.insert(child -> children[3], temp -> children.size());
+    child -> children.erase(2);
+    child -> children.erase(2);
+    }
+    if(parent -> keyvals.empty()){
+    parent -> keyvals.insert(child -> keyvals[1], 0);
+    parent -> children.insert(temp, 1);
+    } else {
+    int index = parent -> keyvals.size() - 1;
+    while (index >= 0 && parent -> key(index) > child -> key(1)){
+        index--;
+    }
+    parent -> keyvals.insert(child -> keyvals[1], index + 1);
+    parent -> children.insert(temp, index + 2);
+    }
+    child -> keyvals.erase(1);
+}
+
+// erase helpers
+template<typename K, typename V>
+void BTreeMap<K, V>::erase(Node* st_root, const K& key)
+{
+    while(st_root){
+    // case 1: leaf case
+    if(st_root -> leaf()){
+        int index = st_root -> keyvals.size() - 1;
+        while(index >= 0){
+        if(st_root -> key(index) == key){
+            st_root -> keyvals.erase(index);
+            return;
+        }
+        index--;
+        }
+        throw std::out_of_range ("Key not contained in Erase");
+    } else {
+        int index = st_root -> keyvals.size() - 1;
+        while(index > 0 && st_root -> key(index) > key){
+        index--;
+        }
+        if(st_root -> key(index) == key){
+        remove_internal(st_root, index);
+        return;
+        } else {
+        int childIndex = index;
+        if(st_root -> key(index) < key){
+            childIndex++;
+        } 
+        if(st_root -> child(childIndex) -> keyvals.size() == 1){
+            rebalance(st_root, index, childIndex);
+            if(root -> keyvals.empty()){
+            Node* temp = root -> child(0);
+            delete root;
+            root = temp;
+            st_root = root;
+            } else if(st_root -> keyvals.empty()){
+            Node* temp = st_root -> child(0);
+            delete st_root;
+            st_root = temp;
+            }
+        } else {
+            if(st_root -> key(index) < key){
+            index++;
+            } 
+            st_root = st_root -> child(index);
+        }
+        }
+    }
+    }
+    throw std::out_of_range ("BTreeMap <K ,V >::erase(const K&)");
+}
+
+//Helper function for the Erase Case 2
+template<typename K, typename V>
+void BTreeMap<K, V>::remove_internal(Node* st_root, int key_idx)
+{
+    if(st_root -> child(key_idx) -> keyvals.size() >= 2){
+    //Erase Case: 2a
+    Node* temp = st_root -> child(key_idx);
+    while(!temp -> leaf()){
+        temp = temp -> child(temp -> children.size() - 1);
+    }
+    int keySize = temp -> keyvals.size() - 1;
+    st_root -> keyvals[key_idx].first = temp -> key(keySize);
+    st_root -> keyvals[key_idx].second = temp -> val(keySize);
+    temp -> keyvals.erase(keySize);
+    } else if(st_root -> child(key_idx + 1) -> keyvals.size() >= 2){
+    //Erase Case: 2b
+    Node* temp = st_root -> child(key_idx + 1);
+    while(!temp -> leaf()){
+        temp = temp -> child(0);
+    }
+    int keySize = 0;
+    st_root -> keyvals[key_idx].first = temp -> key(keySize);
+    st_root -> keyvals[key_idx].second = temp -> val(keySize);
+    temp -> keyvals.erase(keySize);
+    } else if (st_root -> child(key_idx) -> keyvals.size() == 1 && st_root -> child(key_idx + 1) -> keyvals.size() == 1){
+    //Erase Case: 2c
+    Node* right = st_root -> child(key_idx + 1);
+    st_root -> child(key_idx) -> keyvals.insert(st_root -> keyvals[key_idx], st_root -> child(key_idx) -> keyvals.size());
+    st_root -> child(key_idx) -> keyvals.insert(right -> keyvals[0], st_root -> child(key_idx) -> keyvals.size());
+    right -> keyvals.erase(0);
+    if(!right -> leaf()){
+        st_root -> child(key_idx) -> children.insert(right -> child(0), st_root -> child(key_idx) -> children.size());
+        st_root -> child(key_idx) -> children.insert(right -> child(1), st_root -> child(key_idx) -> children.size());
+        right -> keyvals.erase(0);
+        right -> keyvals.erase(0);
+    }
+    st_root -> children.erase(key_idx + 1);
+    delete right;
+    st_root -> keyvals.erase(key_idx);
+    erase(st_root -> child(key_idx), st_root -> child(key_idx) -> key(1));
+    }
+}
+
+//Helper function for Erase Case 3
+template<typename K, typename V>
+void BTreeMap<K, V>::rebalance(Node* st_root, int key_idx, int& child_idx)
+{
+    if(st_root -> child(key_idx) -> keyvals.size() > 1){
+    //Erase Case: 3a left
+    st_root -> child(child_idx) -> keyvals.insert(st_root -> keyvals[key_idx], 0);
+    st_root -> keyvals.erase(key_idx);
+    st_root -> keyvals.insert(st_root -> child(key_idx) -> keyvals[st_root -> child(key_idx) -> keyvals.size() - 1], key_idx);
+    st_root -> child(key_idx) -> keyvals.erase(st_root -> child(key_idx) -> keyvals.size() - 1);
+    if(!st_root -> child(child_idx) -> leaf()){
+        st_root -> child(child_idx) -> children.insert(st_root -> child(key_idx) -> child(2), 0);
+        st_root -> child(key_idx) -> children.erase(2);
+    }
+    } else if(st_root -> child(key_idx + 1) -> keyvals.size() > 1){
+    //Erase Case: 3a right
+    st_root -> child(child_idx) -> keyvals.insert(st_root -> keyvals[key_idx], 1);
+    st_root -> keyvals.erase(child_idx);
+    st_root -> keyvals.insert(st_root -> child(key_idx + 1) -> keyvals[0], key_idx);
+    st_root -> child(key_idx + 1) -> keyvals.erase(0);
+    if(!st_root -> child(key_idx + 1) -> leaf()){
+        st_root -> child(child_idx) -> children.insert(st_root -> child(key_idx + 1) -> child(0), 2);
+        st_root -> child(key_idx + 1) -> children.erase(0);
+    }
+    } else {
+    //Erase Case: 3b
+    Node* right = st_root -> child(key_idx + 1);
+    st_root -> child(key_idx) -> keyvals.insert(st_root -> keyvals[key_idx], 1);
+    st_root -> child(key_idx) -> keyvals.insert(right -> keyvals[0], 2);
+    right -> keyvals.clear();
+    if(!right -> leaf()){
+        st_root -> child(key_idx) -> children.insert(right -> child(0), st_root -> child(key_idx) -> children.size());
+        st_root -> child(key_idx) -> children.insert(right -> child(1), st_root -> child(key_idx) -> children.size());
+        right -> children.clear();
+    }
+    st_root -> keyvals.erase(key_idx);
+    st_root -> children.erase(key_idx + 1);
+    delete right;
+    }
+}
+
+// find_keys helper
+template<typename K, typename V>
+void BTreeMap<K, V>::find_keys(const K& k1, const K& k2, const Node* st_root, ArraySeq<K>& keys) const
+{
+    if(st_root -> leaf()){
+    for(int i = 0; i < st_root -> keyvals.size(); i++){
+        if(st_root -> key(i) >= k1 && st_root -> key(i) <= k2)
+        keys.insert(st_root -> key(i), keys.size());
+    }
+    } else {
+    int index = 0;
+    while(index < st_root -> keyvals.size()){
+        if(st_root -> key(index) > k1){
+        find_keys(k1, k2, st_root -> child(index), keys);
+        }
+        if(st_root -> key(index) >= k1 && st_root -> key(index) <= k2){
+        keys.insert(st_root -> key(index), keys.size());
+        } 
+        index++;
+    }
+    if(st_root -> key(index - 1) < k2)
+        find_keys(k1, k2, st_root -> child(index), keys);
+    }
+}
+
+// sorted_keys helper
+template<typename K, typename V>
+void BTreeMap<K, V>::sorted_keys(const Node* st_root, ArraySeq<K>& keys) const
+{
+    if(st_root -> leaf()){
+    for(int i = 0; i < st_root -> keyvals.size(); i++){
+        keys.insert(st_root -> key(i), keys.size());
+    }
+    } else {
+    for(int i = 0; i < st_root -> keyvals.size(); i++){
+        sorted_keys(st_root -> child(i), keys);
+        keys.insert(st_root -> key(i), keys.size());
+    }
+    sorted_keys(st_root -> child(st_root -> keyvals.size()), keys);
+    }
+}
+
+// height helper
+template<typename K, typename V>
+int BTreeMap<K, V>::height(const Node* st_root) const
+{
+
+}
+    
+#endif
+                        </code>
+                    </pre>
+                </figure>
+                <!--Description of B Tree project-->
+                <div class="projectTxt">
+                    This API is meant to simulate a B-Tree. This data structure utilizes a combitation
+                    of arrayLists and nodes to sort data. 
+                </div>
+            </div>
+            <body>
+                <div id="projectDisplayCode">
+                    <div class="projectTitle">ArraySeq API</div>
+                    <figure>
+                        <pre>
+                            <code>
+    //---------------------------------------------------------------------------
+    // NAME: Connor Goldschmidt
+    // FILE: arrayseq.h
+    // DATE: Spring 2022
+    // DESC: Resizeable-array implementation of the sequence interface.
+    //----------------------------------------------------------------------
+    
+    
+    #ifndef ARRAYLIST_H
+    #define ARRAYLIST_H
+    
+    #include <stdexcept>
+    #include <ostream>
+    #include "sequence.h"
+    
+    
+    template<typename T>
+    class ArraySeq : public Sequence<T>
+    {
+    public:
+    
+        // Default constructor
+        ArraySeq();
+    
+        // Copy constructor
+        ArraySeq(const ArraySeq& rhs);
+    
+        // Move constructor
+        ArraySeq(ArraySeq&& rhs);
+    
+        // Copy assignment operator
+        ArraySeq& operator=(const ArraySeq& rhs);
+    
+        // Move assignment operator
+        ArraySeq& operator=(ArraySeq&& rhs);
+        
+        // Destructor
+        ~ArraySeq();
+        
+        // Returns the number of elements in the sequence
+        int size() const;
+    
+        // Tests if the sequence is empty
+        bool empty() const;
+    
+        // Removes all of the elements from the sequence
+        void clear();
+        
+        // Returns a reference to the element at the index in the
+        // sequence. Throws out_of_range if index is invalid (less than 0 or
+        // greater than or equal to size()).
+        T& operator[](int index);
+    
+        // Returns a constant address to the element at the index in the
+        // sequence. Throws out_of_range if index is invalid (less than 0 or
+        // greater than or equal to size()).
+        const T& operator[](int index) const;
+    
+        // Extends the sequence by inserting the element at the given index.
+        // Throws out_of_range if the index is invalid (less than 0 or
+        // greater than size()).
+        void insert(const T& elem, int index);
+    
+        // Shrinks the sequence by removing the element at the index in the
+        // sequence. Throws out_of_range if index is invalid.
+        void erase(int index);
+    
+        // Returns true if the element is in the sequence, and false
+        // otherwise.
+        bool contains(const T& elem) const;
+    
+        // Sorts the elements in the sequence in place using less than equal
+        // (<=) operator. Uses quick sort with a randomly selected pivot
+        // index.
+        void sort(); 
+    
+        // Sorts the sequence in place using the merge sort algorithm.
+        void merge_sort();
+    
+        // Sorts the sequence in place using the quick sort algorithm. Uses
+        // first element for pivot values.
+        void quick_sort();
+    
+        // Sorts the sequence in place using the quick sort algorithm. Uses
+        // randomly selected indexes for pivot values.
+        void quick_sort_random();
+    
+        
+    private:
+    
+        // resizable array
+        T* array = nullptr;
+    
+        // size of list
+        int count = 0;
+    
+        // max capacity of the array
+        int capacity = 0;
+    
+        // helper to double the capacity of the array
+        void resize();
+    
+        // sort function helpers
+        void merge_sort(int start, int end);
+        void quick_sort(int start, int end);
+        void quick_sort_random(int start, int end);
+    
+        // random seed for quick sort
+        int seed = 22;
+        
+    };
+    
+    
+    template<typename T>
+    std::ostream& operator<<(std::ostream& stream, const ArraySeq<T>& seq)
+    {
+        int n = seq.size();
+        for (int i = 0; i < n - 1; ++i) 
+        stream << seq[i] << ", ";
+        if (n > 0)
+        stream << seq[n - 1];
+        return stream;
+    }
+    
+    
+    template<typename T>
+    ArraySeq<T>::ArraySeq()
+    {
+    }
+    
+    //Post: Initializes the copy constructor.
+    template<typename T>
+    ArraySeq<T>::ArraySeq(const ArraySeq& rhs)
+    {
+        *this = rhs;
+    }
+    
+    //Post: Initializes the move constructor.
+    template<typename T>
+    ArraySeq<T>::ArraySeq(ArraySeq&& rhs)
+    {
+        *this = std::move(rhs);
+    }
+    
+    //Post: Initializes the copy assignment. 
+    template<typename T>
+    ArraySeq<T>& ArraySeq<T>::operator=(const ArraySeq<T>& rhs)
+    {
+        if(this != &rhs){
+        clear();
+        array = new T[rhs.capacity];
+        for(int i = 0; i < rhs.count; i++){
+            array[i] = rhs.array[i];
+        }
+        capacity = rhs.capacity;
+        count = rhs.count;
+        }
+        return *this;
+    }
+    
+    //Post: Initializes the move assignment.
+    template<typename T>
+    ArraySeq<T>& ArraySeq<T>::operator=(ArraySeq<T>&& rhs)
+    {
+        if(this != &rhs){
+        clear();
+        array = rhs.array;
+        capacity = rhs.capacity;
+        count = rhs.count;
+        rhs.capacity = 0;
+        rhs.count = 0;
+        rhs.array = nullptr;
+        }
+    }
+    
+    //Post: Initalizes the deconstructor.
+    template<typename T>
+    ArraySeq<T>::~ArraySeq<T>()
+    {
+        clear();
+    }
+    
+    //Post: Clears the current ArraySeq object.
+    template<typename T>
+    void ArraySeq<T>::clear()
+    {
+        delete [] array;
+        array = nullptr;
+        capacity = 0;
+        count = 0;
+    }
+    
+    //Post: Returns the current size. 
+    template<typename T>
+    int ArraySeq<T>::size() const
+    {
+        return count;
+    }
+    
+    //Post: Returns true if the current arrayseq is empty, false if not.
+    template<typename T>
+    bool ArraySeq<T>::empty() const
+    {
+        if(count == 0){
+        return true;
+        }
+        return false;
+    }
+    
+    //Post: Overrides the access operator. 
+    template<typename T>
+    T& ArraySeq<T>::operator[](int index)
+    {
+        if(index < 0 || index >= count){
+        throw std::out_of_range("Out of Range in Operator"); 
+        } 
+        return array[index];
+    }
+    
+    //Post: Overrides the update operator.
+    template<typename T>
+    const T& ArraySeq<T>::operator[](int index) const
+    {
+        if(index < 0 || index >= count){
+        throw std::out_of_range("Out of Range in Operator"); 
+        } 
+        return array[index];
+    }
+    
+    //Pre: Index must be in range. Must be greater or equal to 
+    //0 and less than or equal to count.
+    //Post: Inserts the given value and the given index.
+    template<typename T>
+    void ArraySeq<T>::insert(const T& elem, int index)
+    {
+        if(index < 0 || index > count){
+        throw std::out_of_range("Out of Range in Empty"); 
+        } 
+        if(count >= capacity ){
+            resize();
+        }
+        for(int i = count - 1; i >= index; i--){
+        array[i + 1] = array[i];
+        }
+        count++;
+        array[index] = elem;
+    }
+    
+    //Pre: Index must be in range. Must be greater or equal to 
+    //0 and less than or equal to count.
+    //Post: Removes the element at the given index.
+    template<typename T>
+    void ArraySeq<T>::erase(int index)
+    {
+        if(index < 0 || index >= count){
+        throw std::out_of_range("Out of Range in Erase"); 
+        } 
+        for(int i = index; i < count - 1; i++){
+        array[i] = array[i + 1];
+        }
+        count--;
+    }
+    
+    //Post: Returns true if the given element is contained in the list,
+    //false if not.
+    template<typename T>
+    bool ArraySeq<T>::contains(const T& elem) const
+    {
+        for(int i = 0; i < size(); i++){
+        if(array[i] == elem){
+            return true;
+        }
+        }
+        return false;
+    }  
+    
+    //Post: Increases the capacity of the array by twice it's origional
+    //value. Sets the size as 1 if it is empty.
+    template<typename T>
+    void ArraySeq<T>::resize()
+    {
+        if(capacity == 0){
+        capacity = 1;
+        } else {
+        capacity *= 2;
+        }
+        T* new_array = new T[capacity];
+        for(int i = 0; i < count; i++){
+            new_array[i] = array[i];
+        }
+        delete [] array;
+        array = new_array;
+        
+    }
+    
+    //Post: Sorts the current arrayseq.
+    template<typename T>
+    void ArraySeq<T>::sort()
+    {
+        merge_sort();
+    }
+    
+    //Post: Sorts the current arrayseq using the merge sort technique.
+    template<typename T>
+    void ArraySeq<T>::merge_sort()
+    {
+        if(count <= 1){
+        return;
+        }
+        merge_sort(0, count - 1);
+    }
+        
+    //Post: Sorts the current arrayseq using the quick sort technique. The pivot value is set to the
+    //first index of the sequence.
+    template<typename T>
+    void ArraySeq<T>::quick_sort()
+    {
+        if(count <= 1){
+        return;
+        }
+        quick_sort(0, count - 1);  
+    }
+    
+    //Post: Sorts the current arrayseq using the quick sort technique. The pivot value is set to a
+    //random index in the sequence.
+    template<typename T>
+    void ArraySeq<T>::quick_sort_random()
+    {
+        if(count <= 1){
+        return;
+        }
+        std::srand(seed);
+        quick_sort_random(0, count - 1);    
+    }
+    
+    //Pre: Start and end are assumed to not be less than 0.
+    //Post: Impliments the private helper method for the merge sort.
+    template<typename T>
+    void ArraySeq<T>::merge_sort(int start, int end)
+    {
+        if(start < end){
+        int mid = (start + end) / 2;
+        merge_sort(start, mid);
+        merge_sort(mid + 1, end);
+        T temp[(end - start) + 1];
+        int first = start;
+        int second = mid + 1;
+        int list_index = 0;
+        while(first <= mid && second <= end){
+            if(array[first] < array[second]){
+            temp[list_index++] = array[first++];
+            } else {
+            temp[list_index++] = array[second++];
+            }
+        }
+        while(first <= mid){
+            temp[list_index++] = array[first++];
+        }
+        while(second <= end){ 
+            temp[list_index++] = array[second++];
+        }
+        for(int i = 0; i <= (end - start); i++){
+            array[start + i] = temp[i];
+        }
+        }
+    }
+    
+    //Pre: Start and end are assumed to not be less than 0.
+    //Post: implements the private helper method for the quick sort.
+    template<typename T>
+    void ArraySeq<T>::quick_sort(int start, int end)
+    {
+        if(start < end){
+        T pivot_val = array[start];
+        int end_p1 = start;
+        for(int i = start + 1; i <= end; i++){
+            if(array[i] < pivot_val){
+            end_p1++;
+            T temp = array[i];
+            array[i] = array[end_p1];
+            array[end_p1] = temp;
+            }
+        }
+        T temp = array[start];
+        array[start] = array[end_p1];
+        array[end_p1] = temp;
+        quick_sort(start, end_p1 - 1);
+        quick_sort(end_p1 + 1, end);
+        }
+    }
+    
+    //Pre: Start and end are assumed to not be less than 0.
+    //Post: Impliments the private helper method for the random quick sort.
+    template<typename T>
+    void ArraySeq<T>::quick_sort_random(int start, int end)
+    {
+        if(start < end){
+        int pivot_index = (std::rand() % (end - start));
+        T pivot_val = array[pivot_index];
+        T move_front = array[0];
+        array[0] = pivot_val;
+        array[pivot_index] = move_front;
+        int end_p1 = start;
+        for(int i = start + 1; i <= end; i++){
+            if(array[i] < pivot_val){
+            end_p1++;
+            T temp = array[i];
+            array[i] = array[end_p1];
+            array[end_p1] = temp;
+            }
+        }
+        T temp = array[start];
+        array[start] = array[end_p1];
+        array[end_p1] = temp;
+        quick_sort(start, end_p1 - 1);
+        quick_sort(end_p1 + 1, end);
+        }
+    }
+    
+    #endif
+                        </code>
+                    </pre>
+                </figure>
+                <!--Description of project-->
+                <div class="projectTxt">
+                    This API is meant to simulate a dynamically allocated arrayList.
+                </div>
+            </div>
+            <div id="projectDisplayCode">
+                <div class="projectTitle">AVL Tree API</div>
+                <figure>
+                    <pre>
+                        <code>
+//---------------------------------------------------------------------------
+// NAME: Connor Goldschmidt
+// FILE: avlmap.h
+// DATE: Spring 2022
+// DESC: Impliments the AVLMap for the Map interface.
+//---------------------------------------------------------------------------
+
+#ifndef AVLMAP_H
+#define AVLMAP_H
+
+#include "map.h"
+#include "arrayseq.h"
+
+
+template<typename K, typename V>
+class AVLMap : public Map<K,V>
+{
+public:
+
+    // default constructor
+    AVLMap();
+
+    // copy constructor
+    AVLMap(const AVLMap& rhs);
+
+    // move constructor
+    AVLMap(AVLMap&& rhs);
+
+    // copy assignment
+    AVLMap& operator=(const AVLMap& rhs);
+
+    // move assignment
+    AVLMap& operator=(AVLMap&& rhs);  
+
+    // destructor
+    ~AVLMap();
+    
+    // Returns the number of key-value pairs in the map
+    int size() const;
+
+    // Tests if the map is empty
+    bool empty() const;
+
+    // Allows values associated with a key to be updated. Throws
+    // out_of_range if the given key is not in the collection.
+    V& operator[](const K& key);
+
+    // Returns the value for a given key. Throws out_of_range if the
+    // given key is not in the collection. 
+    const V& operator[](const K& key) const;
+
+    // Extends the collection by adding the given key-value pair.
+    // Expects key to not exist in map prior to insertion.
+    void insert(const K& key, const V& value);
+
+    // Shrinks the collection by removing the key-value pair with the
+    // given key. Does not modify the collection if the collection does
+    // not contain the key. Throws out_of_range if the given key is not
+    // in the collection.
+    void erase(const K& key);
+
+    // Returns true if the key is in the collection, and false otherwise.
+    bool contains(const K& key) const;
+
+    // Returns the keys k in the collection such that k1 <= k <= k2
+    ArraySeq<K> find_keys(const K& k1, const K& k2) const;
+
+    // Returns the keys in the collection in ascending sorted order
+    ArraySeq<K> sorted_keys() const;  
+
+    // Gives the key (as an ouptput parameter) immediately after the
+    // given key according to ascending sort order. Returns true if a
+    // successor key exists, and false otherwise.
+    bool next_key(const K& key, K& next_key) const; 
+
+    // Gives the key (as an ouptput parameter) immediately before the
+    // given key according to ascending sort order. Returns true if a
+    // predecessor key exists, and false otherwise.
+    bool prev_key(const K& key, K& prev_key) const; 
+
+    // Removes all key-value pairs from the map.
+    void clear();
+
+    // Returns the height of the binary search tree
+    int height() const;
+
+    // helper to print the tree for debugging
+    void print() const;
+
+private:
+
+    // node for linked-list separate chaining
+    struct Node {
+    K key;
+    V value;
+    int height;
+    Node* left;
+    Node* right;
+    };
+
+    // number of key-value pairs in map
+    int count = 0;
+
+    // array of linked lists
+    Node* root = nullptr;
+
+    // clean up the tree and reset count to zero given subtree root
+    void clear(Node* st_root);
+
+    // copy assignment helper
+    Node* copy(const Node* rhs_st_root) const;
+
+    // insert helper
+    Node* insert(const K& key, const V& value, Node* st_root);
+    
+    // erase helper
+    Node* erase(const K& key, Node* st_root);
+
+    // find_keys helper
+    void find_keys(const K& k1, const K& k2, const Node* st_root,
+                    ArraySeq<K>& keys) const;
+
+    // sorted_keys helper
+    void sorted_keys(const Node* st_root, ArraySeq<K>& keys) const;
+
+    // rotations
+    Node* rotate_right(Node* k2);
+    Node* rotate_left(Node* k2);
+
+    // rebalance
+    Node* rebalance(Node* st_root);
+
+    // print helper
+    void print(std::string indent, const Node* st_root) const;
+};
+
+
+template<typename K, typename V>
+void AVLMap<K,V>::print() const
+{
+    print(std::string(""), root);
+}
+
+
+template<typename K, typename V>
+void AVLMap<K,V>::print(std::string indent, const Node* st_root) const
+{
+    if (!st_root)
+    return;
+    std::cout << st_root->key << " (" << st_root->height << ")" <<  std::endl;
+    if (st_root->left) {
+    std::cout << indent << " lft: ";
+    print(indent + " ", st_root->left);
+    }
+    if (st_root->right) {
+    std::cout << indent << " rgt: ";
+    print(indent + " ", st_root->right);
+    }
+}
+
+template<typename K, typename V>
+AVLMap<K,V>::AVLMap()
+{
+}
+
+//initalizes the copy constructor
+template<typename K, typename V>
+AVLMap<K,V>::AVLMap(const AVLMap& rhs)
+{
+    *this = rhs;
+}
+
+//initalizes the move constructor
+template<typename K, typename V>
+AVLMap<K,V>::AVLMap(AVLMap&& rhs)
+{
+    *this = std::move(rhs);
+}
+
+//initalizes the copy assignment
+template<typename K, typename V>
+AVLMap<K, V>& AVLMap<K, V>::operator=(const AVLMap& rhs)
+{
+    if(this != &rhs){
+    clear();
+    root = copy(rhs.root);
+    count = rhs.count;
+    }
+    return *this;
+}
+
+//initalizes the move assignment
+template<typename K, typename V>
+AVLMap<K, V>& AVLMap<K, V>::operator=(AVLMap&& rhs)
+{
+    if(this != &rhs){
+    clear();
+    root = rhs.root;
+    count = rhs.count;
+    rhs.count = 0;
+    rhs.root = nullptr;
+    }
+    return *this;
+}
+
+//initalizes the destructor
+template<typename K, typename V>
+AVLMap<K, V>::~AVLMap()
+{
+    clear();
+}
+
+//returns the number of nodes stored in the tree
+template<typename K, typename V>
+int AVLMap<K, V>::size() const
+{
+    return count; 
+}
+
+//returns true if the tree is empty, false if not
+template<typename K, typename V>
+bool AVLMap<K, V>::empty() const
+{
+    if(count == 0){
+    return true;
+    }
+    return false;
+}
+
+//given a valid key, returns the corrisponding key value
+//throws an out_of_range exception if key is invalid
+template<typename K, typename V>
+V& AVLMap<K, V>::operator[](const K& key)
+{
+    Node* temp = root;
+    while(temp){
+    if(temp -> key == key){
+        return temp -> value;
+    }
+    if(key < temp -> key){
+        temp = temp -> left;
+    } else {
+        temp = temp -> right;
+    }
+    }
+    throw std::out_of_range("Out of Range in Operator");
+}
+
+//given a valid key, returns the corrisponding key value as a constant
+//throws an out_of_range exception if key is invalid
+template<typename K, typename V>
+const V& AVLMap<K, V>::operator[](const K& key) const
+{
+    Node* temp = root;
+    while(temp){
+    if(temp -> key == key){
+        return temp -> value;
+    }
+    if(key < temp -> key){
+        temp = temp -> left;
+    } else {
+        temp = temp -> right;
+    }
+    }
+    throw std::out_of_range("Out of Range in Operator");
+}
+
+//inserts the given key, value pair into a leaf node in the tree
+template<typename K, typename V>
+void AVLMap<K, V>::insert(const K& key, const V& value)
+{
+    root = insert(key, value, root);
+    count++;
+}
+
+//removes the given key and corrisponding value pair from the tree
+template<typename K, typename V>
+void AVLMap<K, V>::erase(const K& key)
+{
+    if(empty() || !contains(key)){
+    throw std::out_of_range("Out of Range in Erase");
+    }
+    root = erase(key, root);
+    count--;
+}
+
+//returns true if given key is in the tree, false if not
+template<typename K, typename V>
+bool AVLMap<K, V>::contains(const K& key) const
+{
+    Node* temp = root;
+    while(temp){
+    if(temp -> key == key){
+        return true;
+    }
+    if(key < temp -> key){
+        temp = temp -> left;
+    } else {
+        temp = temp -> right;
+    }
+    }
+    return false;
+}
+
+//returns an ArraySeq of key values that are between k1 and k2
+template<typename K, typename V>
+ArraySeq<K> AVLMap<K, V>::find_keys(const K& k1, const K& k2) const
+{
+    ArraySeq<K> keys;
+    find_keys(k1, k2, root, keys);
+    return keys;
+}
+
+//returns an array seq of all of the keys in sorted order
+template<typename K, typename V>
+ArraySeq<K> AVLMap<K, V>::sorted_keys() const
+{
+    ArraySeq<K> keys;
+    sorted_keys(root, keys);
+    return keys;
+}
+
+//returns the next key value in the tree
+template<typename K, typename V>
+bool AVLMap<K, V>::next_key(const K& key, K& next_key) const
+{
+    Node* temp = root;
+    K temp_next_key = key;
+    while(temp){
+    if(temp -> key > key && (temp -> key < temp_next_key || temp_next_key == key)){
+        temp_next_key = temp -> key;
+    }
+    if(key < temp -> key){
+        temp = temp -> left;
+    } else {
+        temp = temp -> right;
+    }
+    }
+    if(temp_next_key == key){
+    return false;
+    } else {
+    next_key = temp_next_key;
+    return true;
+    }
+}
+
+//returns the previous key value in the tree
+template<typename K, typename V>
+bool AVLMap<K, V>::prev_key(const K& key, K& prev_key) const
+{
+    Node* temp = root;
+    K temp_prev_key = key;
+    while(temp){
+    if(temp -> key < key && (temp -> key > temp_prev_key || temp_prev_key == key)){
+        temp_prev_key = temp -> key;
+    }
+    if(key <= temp -> key){
+        temp = temp -> left;
+    } else {
+        temp = temp -> right;
+    } 
+    }
+    if(temp_prev_key == key){
+    return false;
+    } else {
+    prev_key = temp_prev_key;
+    return true;
+    }
+}
+
+//deletes all of the values in the tree
+template<typename K, typename V>
+void AVLMap<K, V>::clear()
+{
+    clear(root);
+    count = 0;
+    root = nullptr;
+}
+
+//returns the largest root to leaf path in the tree
+template<typename K, typename V>
+int AVLMap<K, V>::height() const
+{
+    if(!root){
+    return 0;
+    }
+    return root -> height;
+}
+
+//helper function for the clear method
+template<typename K, typename V>
+void AVLMap<K, V>::clear(Node* st_root)
+{
+    if(!st_root){
+    return;
+    }
+    clear(st_root -> left);
+    clear(st_root -> right);
+    delete st_root;
+}
+
+//Helper function for the insert method
+template<typename K, typename V>
+typename AVLMap<K,V>::Node* AVLMap<K,V>::insert(const K& key, const V& value, Node* st_root)
+{
+    if(st_root == nullptr){
+    Node* new_node = new Node;
+    new_node -> key = key;
+    new_node -> value = value;
+    new_node -> height = 1;
+    new_node -> left = nullptr;
+    new_node -> right = nullptr;
+    st_root = new_node;
+    } else { 
+    if(key < st_root -> key){
+        st_root -> left = insert(key, value, st_root -> left);
+    } else {
+        st_root -> right = insert(key, value, st_root -> right);
+    }
+    if(st_root -> left && st_root -> right){
+        st_root -> height = std::max(st_root -> left -> height, st_root -> right -> height) + 1;
+    } else if(st_root -> left){
+        st_root -> height = st_root -> left -> height + 1;
+    } else {
+        st_root -> height = st_root -> right -> height + 1;
+    } 
+    st_root = rebalance(st_root);
+    }
+    return st_root;
+}
+
+//Rotates the given node to the right
+template<typename K, typename V>
+typename AVLMap<K,V>::Node* AVLMap<K,V>::rotate_right(Node* k2)
+{
+    Node* k1 = k2 -> left;
+    k2 -> left = k1 -> right;
+    k1 -> right = k2;
+    return k1;
+}
+
+//Rotates the given node to the left
+template<typename K, typename V>
+typename AVLMap<K,V>::Node* AVLMap<K,V>::rotate_left(Node* k2)
+{
+    Node* k1 = k2 -> right;
+    k2 -> right = k1 -> left;
+    k1 -> left = k2;
+    return k1;
+}
+
+//Balances the given node to a balance factor that is greater than -1 and less than 1
+//then updates the height of the nodes
+template<typename K, typename V>
+typename AVLMap<K,V>::Node* AVLMap<K,V>::rebalance(Node* st_root)
+{
+    Node* left_child = st_root -> left;
+    Node* right_child = st_root -> right;
+    if(left_child && !right_child && left_child -> height > 1){
+    if(left_child -> right){
+        st_root -> left = rotate_left(left_child);
+    }
+    st_root = rotate_right(st_root);
+    } else if(!left_child && right_child && right_child -> height > 1){
+    if(right_child -> left){
+        st_root -> right = rotate_right(right_child);
+        }
+    st_root = rotate_left(st_root);
+    } else if(left_child && right_child){
+    int balance_factor = left_child -> height - right_child -> height;
+    if(balance_factor > 1){
+        if(left_child -> right && (!left_child -> left || left_child -> left -> height < left_child -> right -> height)){
+        st_root -> left = rotate_left(left_child);
+        } 
+        st_root = rotate_right(st_root);
+    } else if(balance_factor < -1){
+        if(right_child -> left && (!right_child -> right || right_child -> left -> height > right_child -> right -> height)){
+        st_root -> right = rotate_right(right_child);
+        }
+        st_root = rotate_left(st_root);
+    }
+    }
+    if(st_root -> left){
+    if(st_root -> left -> right && st_root -> left -> left){
+        st_root -> left -> height = std::max(st_root -> left -> left -> height, st_root -> left -> right -> height) + 1;
+    } else if(st_root -> left -> right){
+        st_root -> left -> height = st_root -> left -> right -> height + 1;
+    } else if(st_root -> left -> left){
+        st_root -> left -> height = st_root -> left -> left -> height + 1;
+    } else {
+        st_root -> left -> height = 1;
+    }
+    }
+    if(st_root -> right){
+    if(st_root -> right -> right && st_root -> right -> left){
+        st_root -> right -> height = std::max(st_root -> right -> left -> height, st_root -> right -> right -> height) + 1;
+    } else if(st_root -> right -> right){
+        st_root -> right -> height = st_root -> right -> right -> height + 1;
+    } else if(st_root -> right -> left){
+        st_root -> right -> height = st_root -> right -> left -> height + 1;
+    } else {
+        st_root -> right -> height = 1;
+    }
+    }
+    if(st_root -> left && st_root -> right){
+    st_root -> height = std::max(st_root -> left -> height, st_root -> right -> height) + 1;
+    }else if(st_root -> left){
+    st_root -> height = st_root -> left -> height + 1;
+    } else if(st_root -> right){
+    st_root -> height = st_root -> right -> height + 1;
+    } 
+    return st_root;
+}
+
+//Helper function for the erase method
+template<typename K, typename V>
+typename AVLMap<K,V>::Node* AVLMap<K,V>::erase(const K& key, Node* st_root)
+{
+    if(!st_root){
+    return nullptr;
+    }
+    if(key < st_root -> key ){
+    st_root -> left = erase(key, st_root -> left);
+    } else if(key > st_root -> key){
+    st_root -> right = erase(key, st_root -> right);
+    } else {
+    if(st_root -> left == nullptr && st_root -> right == nullptr){
+        delete st_root;
+        st_root = nullptr;
+    } else if(st_root -> left == nullptr){
+        Node* temp = st_root;
+        st_root = st_root -> right;
+        delete temp;
+    } else if(st_root -> right == nullptr){
+        Node* temp = st_root;
+        st_root = st_root -> left;
+        delete temp;
+    } else {
+        Node* temp = st_root -> right;
+        while(temp -> left){
+        temp = temp -> left;
+        }
+        st_root -> key = temp -> key;
+        st_root -> value = temp -> value;
+        st_root -> right = erase(temp -> key, st_root -> right);
+    }
+    }
+    if(st_root){
+    if(st_root -> left && st_root -> right){
+        st_root -> height = std::max(st_root -> left -> height, st_root -> right -> height) + 1;
+    } else if(st_root -> left){
+        st_root -> height = st_root -> left -> height + 1;
+    } else if(st_root -> right){
+        st_root -> height = st_root -> right -> height + 1;
+    } else {
+        st_root -> height = 1;
+    }
+    st_root = rebalance(st_root);
+    } 
+    return st_root;
+}
+
+//returns the root of the copied tree
+template<typename K, typename V>
+typename AVLMap<K,V>::Node* AVLMap<K, V>::copy(const Node* rhs_st_root) const
+{
+    if(!rhs_st_root){
+    return nullptr;
+    } else {
+    Node* new_node = new Node;
+    new_node -> key = rhs_st_root -> key;
+    new_node -> value = rhs_st_root -> value;
+    new_node -> left = copy(rhs_st_root -> left);
+    new_node -> right = copy(rhs_st_root -> right);
+    return new_node;
+    }
+}
+
+//helper function for the find_keys method
+template<typename K, typename V>
+void AVLMap<K, V>::find_keys(const K& k1, const K& k2, const Node* st_root, ArraySeq<K>& keys) const
+{
+    if(st_root){
+    if(k1 <= st_root -> key){
+        find_keys(k1, k2, st_root -> left, keys);
+    }
+    if(k2 >= st_root -> key && k1 <= st_root -> key){
+        keys.insert(st_root -> key, keys.size());
+    }
+    if(k2 >= st_root -> key){
+        find_keys(k1, k2, st_root -> right, keys);
+    }
+    }
+}
+
+//helper function for the sorted_keys method
+template<typename K, typename V>
+void AVLMap<K, V>::sorted_keys(const Node* st_root, ArraySeq<K>& keys) const
+{
+    if(st_root){
+    sorted_keys(st_root -> left, keys);
+    keys.insert(st_root -> key, keys.size());
+    sorted_keys(st_root -> right, keys);
+    }
+}
+
+#endif
+                        </code>
+                    </pre>
+                </figure>
+                <!--Description of ArrayList project-->
+                <div class="projectTxt">
+                    This API is meant to simulate an AVL Tree data structure. The AVL tree is 
+                    similar to a BST in structure, however it auto resizes if the balance factor exceeds 
+                    an imbalance of 2+ nodes. This prevents the creation of a degenerate tree. 
+                </div>
+            </div>
+            <div id="projectDisplayCode">
+                <div class="projectTitle">LinkedSeq API</div>
+                <figure>
+                    <pre>
+                        <code>
+//----------------------------------------------------------------------
+// NAME: Connor Goldschmidt
+// FILE: linkedlist.h
+// DATE: Spring 2022
+// DESC: Linked-list implementation of the sequence interface.
+//----------------------------------------------------------------------
+
+
+#ifndef LINKEDLIST_H
+#define LINKEDLIST_H
+
+#include <stdexcept>
+#include <ostream>
+#include "sequence.h"
+
+
+template<typename T>
+class LinkedSeq : public Sequence<T>
+{
+public:
+
+    // Default constructor
+    LinkedSeq();
+
+    // Copy constructor
+    LinkedSeq(const LinkedSeq& rhs);
+
+    // Move constructor
+    LinkedSeq(LinkedSeq&& rhs);
+
+    // Copy assignment operator
+    LinkedSeq& operator=(const LinkedSeq& rhs);
+
+    // Move assignment operator
+    LinkedSeq& operator=(LinkedSeq&& rhs);
+    
+    // Destructor
+    ~LinkedSeq();
+    
+    // Returns the number of elements in the sequence
+    int size() const override;
+
+    // Tests if the sequence is empty
+    bool empty() const override;
+
+    // Removes all of the elements from the sequence
+    void clear() override;
+    
+    // Returns a reference to the element at the index in the
+    // sequence. Throws out_of_range if index is invalid.
+    T& operator[](int index) override;
+
+    // Returns a constant address to the element at the index in the
+    // sequence. Throws out_of_range if index is invalid.
+    const T& operator[](int index) const override;
+
+    // Extends the sequence by inserting the element at the given
+    // index. Throws out_of_range if the index is invalid.
+    void insert(const T& elem, int index) override;
+
+    // Shrinks the sequence by removing the element at the index in the
+    // sequence. Throws out_of_range if index is invalid.
+    void erase(int index) override;
+
+    // Returns true if the element is in the sequence, and false
+    // otherwise.
+    bool contains(const T& elem) const override;
+
+    // Sorts the elements in the sequence in place using less than equal
+    // (<=) operator. Uses merge sort.
+    void sort(); 
+
+    // Sorts the sequence in place using the merge sort algorithm.
+    void merge_sort();
+
+    // Sorts the sequence in place using the quick sort algorithm. Uses
+    // first element for pivot values.
+    void quick_sort();
+
+    // Sorts the sequence in place using the quick sort algorithm. Uses
+    // randomly selected indexes for pivot values.
+    void quick_sort_random();
+    
+private:
+
+    // linked list node
+    struct Node {
+    T value;
+    Node* next = nullptr;
+    };
+
+    // head pointer
+    Node* head = nullptr;
+
+    // tail pointer
+    Node* tail = nullptr;
+
+    // size of list
+    int node_count = 0;
+
+    // sort function helpers
+    Node* merge_sort(Node* left, int len);
+    Node* quick_sort(Node* start, int len);
+    Node* quick_sort_random(Node* start, int len);
+
+    // random seed for quick sort
+    int seed = 22;
+
+};
+
+
+template<typename T>
+std::ostream& operator<<(std::ostream& stream, const LinkedSeq<T>& seq)
+{
+    int n = seq.size();
+    for (int i = 0; i < n - 1; ++i) 
+    stream << seq[i] << ", ";
+    if (n > 0)
+    stream << seq[n - 1];
+    return stream;
+}
+
+
+template<typename T>
+LinkedSeq<T>::LinkedSeq()
+{
+}
+
+
+// (1) TODO: Add your linkedseq function implementations from HW-2 here.
+
+
+
+
+
+// (2) TODO: Implement the following sorting functions for your linked
+// sequence. Note that:
+//
+//   (a) You are NOT ALLOWED to add any additional helper functions
+//       for sorting.
+//   (b) You may NOT swap any values between nodes and MUST follow the
+//       approaches outlined in the lecture notes.
+//   (c) You CAN do one swap for quick_sort_random (i.e., where the
+//       pivot is randomly selected) to exchange the pivot node's
+//       value with the start node's value.
+//   (d) To obtain a random integer, use the C++ standard function
+//       std::rand(). This function returns a random number (up to a
+//       fixed max value). You will need to convert the value returned
+//       to a valid index.
+
+//Overload the copy contructor and implements it for the LinkedSeq class.
+template <typename T>
+LinkedSeq<T>::LinkedSeq(const LinkedSeq& rhs)
+{
+    *this = rhs;
+}
+
+//Overload the move contructor and implements it for the LinkedSeq class.
+template <typename T>
+LinkedSeq<T>::LinkedSeq(LinkedSeq&& rhs)
+{
+    *this = std::move(rhs);
+}
+
+//Overload the copy assignment and implements it for the LinkedSeq class.
+template <typename T>
+LinkedSeq<T>& LinkedSeq<T>::operator=(const LinkedSeq<T>& rhs)
+{
+    if(this != &rhs){
+    clear();
+    Node* curr = rhs.head;
+    for(int i = 0; i < rhs.node_count; i++){
+        insert(curr -> value, i);
+        curr = curr -> next;
+    }
+    }
+    return *this;
+}
+
+//Overload the move assignment and implements it for the LinkedSeq class.
+template <typename T>
+LinkedSeq<T>& LinkedSeq<T>::operator=(LinkedSeq<T>&& rhs)
+{
+    if(this != &rhs){
+    clear();
+    head = rhs.head;
+    tail = rhs.tail;
+    node_count = rhs.node_count;
+    rhs.head = nullptr;
+    rhs.tail = nullptr;
+    rhs.node_count = 0;
+    }
+    return *this;
+}
+
+//Overloads the destructor for the LinkedSeq class.
+template<typename T>
+LinkedSeq<T>::~LinkedSeq<T>()
+{
+    clear();
+}
+
+//Post: Returns the size of the current LinkedSeq object.
+template<typename T>
+int LinkedSeq<T>::size() const
+{
+    return node_count;
+}
+
+//Post: Returns true if the current LinkedSeq is empty, false if it is not.
+template<typename T>
+bool LinkedSeq<T>::empty() const
+{
+    if(node_count == 0){
+    return true;
+    }
+    return false;
+}
+
+//Post: Clears the current LinkedSeq object.
+template<typename T>
+void LinkedSeq<T>::clear()
+{
+    Node* curr = head;
+    while(head){
+    head = head -> next;
+    delete curr;
+    curr = head;
+    }
+
+    tail = nullptr;
+    node_count = 0;
+}
+
+/*Pre: Input index but by valid. I.E. it must be a positive number 
+that is not greater than the size. Throws an out_of_range error if not*/
+//Post: Inserts the given value at the given index.
+template<typename T>
+void LinkedSeq<T>::insert(const T& elem, int index)
+{
+    if(index < 0 || index > node_count) {
+    throw std::out_of_range("Invalid Index In Insert");
+    }
+    Node* new_node = new Node{elem, nullptr};
+    if(empty()){
+    head = new_node;
+    tail = new_node;
+    } else if(index == size()){
+    tail -> next = new_node;
+    tail = new_node;
+    } else if(index == 0){
+    new_node -> next = head;
+    head = new_node;
+    } else {
+    Node* curr = head;
+    for(int i = 0; i < index - 1; i++){
+        curr = curr -> next;
+    }
+    new_node -> next = curr -> next;
+    curr -> next = new_node;
+    }
+    node_count = node_count + 1;
+}
+
+/*Post: Returns true if the given element is contained in the
+LinkedSeq.*/
+template<typename T>
+bool LinkedSeq<T>::contains(const T& elem) const
+{
+    Node* curr = head;
+    while(curr){
+    if(curr -> value == elem){
+        return true;
+    }
+    curr = curr -> next;
+    }
+    return false;
+}
+
+/*Pre: Input index but by valid. I.E. it must be a positive number 
+that is not greater than the size. Throws an out_of_range error if not*/
+//Post: Removes the given index from the LinkedSeq.
+template<typename T>
+void LinkedSeq<T>::erase(int index)
+{
+    if(index < 0 || index >= size()){
+    throw std::out_of_range("Invalid Index In Erase");
+    }
+    Node* curr = head;
+    node_count = node_count - 1;
+    if(index == 0){
+    head = head -> next;
+    delete curr;
+    } else{
+    for(int i = 0; i < index - 1; i++){
+        curr = curr -> next;
+    }
+    Node* new_node = curr -> next;
+    curr -> next = new_node -> next;
+    delete new_node;
+    if(index == node_count){
+        tail = curr;
+    }
+    }
+}
+
+/*Pre: Input index but by valid. I.E. it must be a positive number 
+that is not greater than the size. Throws an out_of_range error if not*/
+//Post: Overrides the access operator and returns a reference to the input index.
+template<typename T>
+const T& LinkedSeq<T>::operator[](int a) const
+{
+    if(a < 0 || a >= size()){
+    throw std::out_of_range("Invalid Index In Operator");
+    }
+    if(a == node_count - 1){
+    return tail -> value;
+    }
+    Node* curr = head;
+    for(int i = 0; i < a; i++){
+    curr = curr -> next;
+    }
+    return curr -> value;
+}
+
+/*Pre: Input index but by valid. I.E. it must be a positive number 
+that is not greater than the size. Throws an out_of_range error if not*/
+//Post:Overrides the assign operator and updates the given index.
+template<typename T>
+T& LinkedSeq<T>::operator[](int a)
+{
+    if(a < 0 || a >= size()){
+    throw std::out_of_range("Invalid Index In Operator");
+    }
+    if(a == node_count - 1){
+    return tail -> value;
+    }
+    Node* curr = head;
+    for(int i = 0; i < a; i++){
+    curr = curr -> next;
+    }
+    return curr -> value;
+}
+
+//Post: Sorts the current linkedseq.
+template<typename T>
+void LinkedSeq<T>::sort()
+{
+    merge_sort();
+}
+
+//Post: Sorts the current linkedseq using the merge sort technique.
+template<typename T>
+void LinkedSeq<T>::merge_sort()
+{
+    if(node_count <= 1){
+    return;
+    }
+    head = merge_sort(head, node_count);
+    Node* curr = head;
+    for(int i = 0; i < node_count - 1; i++){
+    curr = curr -> next;
+    }
+    tail = curr;
+}
+
+//Post: Sorts the current linkedseq using the quick sort technique. The pivot value is set to the
+//first index of the sequence.
+template<typename T>
+void LinkedSeq<T>::quick_sort()
+{
+    if(node_count <= 1){
+    return;
+    }
+    head = quick_sort(head, node_count);
+    Node* curr = head;
+    for(int i = 0; i < node_count - 1; i++){
+    curr = curr -> next;
+    }
+    tail = curr;
+    tail -> next = nullptr;
+}
+
+//Post: Sorts the current linkedseq using the quick sort technique. The pivot value is set to a
+//random index in the sequence.
+template<typename T>
+void LinkedSeq<T>::quick_sort_random()
+{
+    std::srand(seed);
+    if(node_count <= 1){
+    return;
+    }
+    head = quick_sort(head, node_count);
+    Node* curr = head;
+    for(int i = 0; i < node_count - 1; i++){
+    curr = curr -> next;
+    }
+    tail = curr;
+    tail -> next = nullptr;
+}
+
+//Pre: Start and end are assumed to not be less than 0.
+//Post: Impliments the private helper method for the merge sort.
+template<typename T>
+typename LinkedSeq<T>::Node* LinkedSeq<T>::merge_sort(Node* left, int len)
+{
+    if(len <= 1){
+    return left;
+    }
+    int mid = (len / 2);
+    Node* right = left;
+    for(int i = 0; i < mid - 1; i++){
+    right = right -> next;
+    }
+    Node* temp_break = right;
+    right = right -> next;
+    temp_break -> next = nullptr;
+    left = merge_sort(left, mid);
+    right = merge_sort(right, len - mid);
+    Node* merge = nullptr;
+    if(left -> value < right -> value){
+        merge = left;
+        left = left -> next;
+    } else {
+        merge = right;
+        right = right -> next;
+    }
+    Node* merge_tail = merge;
+    while(left != nullptr && right != nullptr){
+    if(left -> value < right -> value){
+        merge_tail -> next = left;
+        merge_tail = merge_tail -> next;
+        left = left -> next;
+    } else {
+        merge_tail -> next = right;
+        merge_tail = merge_tail -> next;
+        right = right -> next;
+    }
+    }
+    while(left != nullptr){
+    merge_tail -> next = left;
+    merge_tail = merge_tail -> next;
+    left = left -> next;
+    }
+    while(right != nullptr){ 
+    merge_tail -> next = right;
+    merge_tail = merge_tail -> next;
+    right = right -> next;
+    }
+    merge_tail -> next = nullptr;
+    return merge;
+}
+
+//Pre: Start and end are assumed to not be less than 0.
+//Post: implements the private helper method for the quick sort.
+template<typename T>
+typename LinkedSeq<T>::Node* LinkedSeq<T>::quick_sort(Node* start, int len)
+{
+    if(len <= 1){
+    return start;
+    }
+    Node* pivot = start;
+    start = start -> next;
+    pivot -> next = nullptr;
+    len--;
+    Node* smaller = nullptr;
+    Node* larger = nullptr;
+    Node* smaller_tail = nullptr;
+    Node* larger_tail = nullptr;
+    int smaller_len = 0;
+    while(start != nullptr){
+    if(start -> value < pivot -> value){
+        if(smaller == nullptr){
+        smaller = start;
+        smaller_tail = smaller;
+        } else {
+        smaller_tail -> next = start;
+        smaller_tail = smaller_tail -> next;
+        }
+        start = start -> next;
+        smaller_tail -> next = nullptr;
+        smaller_len++;
+    } else {
+        if(larger == nullptr){
+        larger = start;
+        larger_tail = larger;
+        } else {
+        larger_tail -> next = start;
+        larger_tail = larger_tail -> next;
+        }
+        start = start -> next;
+        larger_tail -> next = nullptr;
+    }
+    }
+    smaller = quick_sort(smaller, smaller_len);
+    larger = quick_sort(larger, len - smaller_len);
+    pivot -> next = larger;
+    if(!smaller){
+    return pivot;
+    }
+    Node* merge = smaller;
+    for(int i = 0; i < smaller_len - 1; i++){
+    smaller = smaller -> next;
+    }
+    smaller -> next = pivot;
+    return merge;
+}
+
+//Pre: Start and end are assumed to not be less than 0.
+//Post: Impliments the private helper method for the random quick sort.
+template<typename T>
+typename LinkedSeq<T>::Node* LinkedSeq<T>::quick_sort_random(Node* start, int len)
+{
+    if(len <= 1){
+    return start;
+    }
+    Node* curr = start;
+    Node* pivot = nullptr;
+    for(int i = 0; i < (std::rand() % len); i++){
+    curr = curr -> next;
+    }
+    pivot = curr -> next;
+    curr -> next = pivot -> next;
+    pivot -> next = nullptr;
+    len--;
+    Node* smaller = nullptr;
+    Node* larger = nullptr;
+    Node* smaller_tail = nullptr;
+    Node* larger_tail = nullptr;
+    int smaller_len = 0;
+    while(start != nullptr){
+    if(start -> value < pivot -> value){
+        if(smaller == nullptr){
+        smaller = start;
+        smaller_tail = smaller;
+        } else {
+        smaller_tail -> next = start;
+        smaller_tail = smaller_tail -> next;
+        }
+        start = start -> next;
+        smaller_tail -> next = nullptr;
+        smaller_len++;
+    } else {
+        if(larger == nullptr){
+        larger = start;
+        larger_tail = larger;
+        } else {
+        larger_tail -> next = start;
+        larger_tail = larger_tail -> next;
+        }
+        start = start -> next;
+        larger_tail -> next = nullptr;
+    }
+    }
+    smaller = quick_sort(smaller, smaller_len);
+    larger = quick_sort(larger, len - smaller_len);
+    pivot -> next = larger;
+    if(!smaller){
+    return pivot;
+    }
+    Node* merge = smaller;
+    for(int i = 0; i < smaller_len - 1; i++){
+    smaller = smaller -> next;
+    }
+    smaller -> next = pivot;
+    return merge;
+}
+
+#endif
+                        </code>
+                    </pre>
+                </figure>
+                <!--Description of LinkedLIst project-->
+                <div class="projectTxt">
+                    This API is meant to simulate a single-linked list.
+                </div>
+            </div>
         </body>
         <!--The footer contains links to my linkedIn, Email, and Instagram-->
         <footer>
             <div id="foot" class="container">
-            <a href="https://www.linkedin.com/in/connor-goldschmidt-80112a214/" target="_blank">
-                <img class="links" src="../Images/photo_linkedIn.png" alt="linkedIn">
-            </a>
-            <a href="mailto:cgoldschmidt04@gmail.com" target="_blank">
-                    <img class="links" src="../Images/photo_gmail.png" alt="Email"> 
+                <a href="https://www.linkedin.com/in/connor-goldschmidt-80112a214/" target="_blank">
+                    <img class="links" src="Images/photo_linkedIn.png" alt="linkedIn" >
+                </a>
+                <a href="mailto:cgoldschmidt04@gmail.com" target="_blank">
+                    <img class="links" src="Images/photo_gmail.png" alt="Email"> 
                 </a>
                 <a href="https://www.instagram.com/connorgoldschmidt/" target="_blank">
-                    <img class="links" src="../Images/photo_instagram.png" alt="Instagram">
+                    <img class="links" src="Images/photo_instagram.png" alt="Instagram">
                 </a>
             </div>
         </footer>

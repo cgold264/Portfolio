@@ -20,8 +20,8 @@ function slideShow(container, time) {
       if (this.curImage>=this.images.length) this.curImage=0;
       window.setTimeout(nextSlide.bind(document.getElementById(this)), time);
     };
-  
+
     nextSlide.call(this);
-  
+    
   };
   
